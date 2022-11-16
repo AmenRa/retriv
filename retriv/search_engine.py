@@ -14,9 +14,8 @@ from numba.typed import List as TypedList
 from oneliner_utils import read_csv, read_jsonl
 from rich.progress import track
 
-from src.bm25 import bm25, bm25_multi
-
 from .autotune import tune_bm25
+from .bm25 import bm25, bm25_multi
 from .stemmers import get_stemmer
 from .stopwords import get_stopwords
 from .tokenizers import get_tokenizer
