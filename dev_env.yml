@@ -1,0 +1,30 @@
+name: retriv
+dependencies:
+  - python=3.7
+  - black
+  - conda-forge::icecream
+  - isort
+  - ipykernel
+  - ipywidgets
+  - conda-forge::mkdocs-material
+  - conda-forge::mkdocs-autorefs
+  - conda-forge::mkdocstrings 
+  - conda-forge::mkdocstrings-python 
+  - pygments>=2.12
+  - notebook
+  - numba
+  - numpy
+  - nltk
+  - conda-forge::orjson
+  - pytest
+  - scikit-learn
+  - conda-forge::optuna
+  - rich
+  - tqdm
+  - pip
+  - pip:
+    - ranx
+    - krovetzstemmer
+    - twine
+    - oneliner_utils
+    - indxr
