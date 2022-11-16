@@ -125,7 +125,7 @@ se.search(
 )
 ```
 Output:
-```
+```python
 [
   {
     "id": "doc_2",
