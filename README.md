@@ -67,7 +67,7 @@ To select your preferred language simply use `<language>` .
 ### AutoTune
 
 [retriv](https://github.com/AmenRa/retriv) supports an automatic tuning functionality that allows you to tune [BM25](https://en.wikipedia.org/wiki/Okapi_BM25)'s parameters with a single function call.
-Under the hood, [retriv](https://github.com/AmenRa/retriv) leverage [Optuna](https://optuna.org), a [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization) framework, and [ranx](https://github.com/AmenRa/ranx), an [Information Retrieval](https://en.wikipedia.org/wiki/Information_retrieval) evaluation library, to test several parameter configurations for [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) and choose the best one.
+Under the hood, [retriv](https://github.com/AmenRa/retriv) leverages [Optuna](https://optuna.org), a [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization) framework, and [ranx](https://github.com/AmenRa/ranx), an [Information Retrieval](https://en.wikipedia.org/wiki/Information_retrieval) evaluation library, to test several parameter configurations for [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) and choose the best one.
 
 ## 🔌 Installation
 ```bash
