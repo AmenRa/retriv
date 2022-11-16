@@ -155,7 +155,7 @@ best_params = se.autotune(
 )
 ```
 Search using the best parameter configuration:
-```
+```python
 results = se.search(query, **best_params)
 ```
 
