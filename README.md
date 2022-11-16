@@ -25,7 +25,7 @@
 
 ## ⚡️ Introduction
 
-[retriv](https://github.com/AmenRa/retriv) is a fast search engine implemented in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)), leveraging [Numba](https://github.com/numba/numba) for high-speed [vector operations](https://en.wikipedia.org/wiki/Automatic_vectorization) and [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization).
+[retriv](https://github.com/AmenRa/retriv) is a fast [search engine](https://en.wikipedia.org/wiki/Search_engine) implemented in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)), leveraging [Numba](https://github.com/numba/numba) for high-speed [vector operations](https://en.wikipedia.org/wiki/Automatic_vectorization) and [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization).
 It offers a user-friendly interface to index and search your document collection and allows you to automatically tune the underling retrieval model, [BM25](https://en.wikipedia.org/wiki/Okapi_BM25).
 
 
