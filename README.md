@@ -140,6 +140,27 @@ Output:
 ]
 ```
 
+
+### Multi-Search
+```python
+se.msearch(
+  queries=[{"id": "q_1", "text": "witches masses"}, ...],
+  b=0.75,            # Default value, BM25 parameter
+  k1=1.2,            # Default value, BM25 parameter
+  n_res=100,         # Default value, number of results
+)
+```
+Output:
+```python
+{
+  "q_1": {
+    "doc_2": 1.7536403,
+    "doc_1": 0.6931472
+  },
+  ...
+}
+```
+
 ### AutoTune
 
 Use the AutoTune function to tune BM25 parameters w.r.t. your document collection and queries.
