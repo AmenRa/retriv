@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="retriv",
-    version="0.1.3",
+    version="0.1.4",
     author="Elias Bassani",
     author_email="elias.bssn@gmail.com",
     description="retriv: A Blazing-Fast Python Search Engine.",
@@ -23,6 +23,7 @@ setuptools.setup(
         "pystemmer==2.0.1",
         "cyhunspell",
         "unidecode",
+        "scikit-learn",
         "ranx",
         "indxr",
         "oneliner_utils",
