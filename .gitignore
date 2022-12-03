@@ -1,6 +1,12 @@
+/beir
+/dictionaries
+/collections
 /datasets
 *.npy
 *.tar.gz
+*.csv
+*.tsv
+*.jsonl
 
 raw_collection.jsonl
 .DS_Store

@@ -21,6 +21,7 @@ dependencies:
   - conda-forge::optuna
   - rich
   - tqdm
+  - unidecode
   - pip
   - pip:
     - ranx
@@ -28,3 +29,5 @@ dependencies:
     - twine
     - oneliner_utils
     - indxr
+    - cyhunspell  # Cython wrapper on Hunspell Dictionary
+    - pystemmer
