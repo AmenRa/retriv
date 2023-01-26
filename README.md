@@ -287,7 +287,7 @@ Results are reported below. Best results are highlighted in boldface.
 | [rank_bm25](https://github.com/dorianbrown/rank_bm25)     |       8,841,823 |          N/A |             N/A |              N/A |
 | [pyserini](https://github.com/castorini/pyserini)         |       8,841,823 |     12,245ms |          12.2ms |             82/s |
 | [retriv](https://github.com/AmenRa/retriv)                |       8,841,823 |     10,763ms |          10.8ms |             93/s |
-| [retriv](https://github.com/AmenRa/retriv) (multi-search) |       8,841,823 |  __5,644ms__ |       __5.6ms__ |        __177/s__ |
+| [retriv](https://github.com/AmenRa/retriv) (multi-search) |       8,841,823 |  __4,476ms__ |       __4.4ms__ |        __227/s__ |
 
 
 ## 🎁 Feature Requests

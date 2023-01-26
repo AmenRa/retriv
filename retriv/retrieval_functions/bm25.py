@@ -5,7 +5,23 @@ import numpy as np
 from numba import njit, prange
 from numba.typed import List as TypedList
 
-from ..utils.numba_utils import get_indices, join_sorted_multi_recursive
+from ..utils.numba_utils import join_sorted_multi_recursive, unsorted_top_k
+
+
+@njit(cache=True)
+def bm25_score(
+    b: float,
+    k1: float,
+    tfs: np.ndarray,
+    doc_ids: np.ndarray,
+    relative_doc_lens: np.ndarray,
+    doc_count: int,
+) -> np.ndarray:
+    # BM25_score = IDF * (tf * (k + 1)) / (k * (1.0 - b + b * (|d|/avgDl)) + tf)
+    df = np.float32(len(doc_ids))
+    idf = np.float32(np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5))))
+    doc_lens = relative_doc_lens[doc_ids]
+    return idf * ((tfs * (k1 + 1.0)) / (tfs + k1 * (1.0 - b + (b * doc_lens))))
 
 
 @njit(cache=True)
@@ -30,7 +46,6 @@ def bm25(
         df = np.float32(len(indices))
         idf = np.float32(np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5))))
 
-        # BM25_score = IDF * (tf * (k + 1)) / (k * (1.0 - b + b * (|d|/avgDl)) + tf)
         scores[indices] += idf * (
             (freqs * (k1 + 1.0))
             / (freqs + k1 * (1.0 - b + (b * relative_doc_lens[indices])))
@@ -39,39 +54,12 @@ def bm25(
     scores = scores[unique_doc_ids]
 
     if cutoff < len(scores):
-        top_scores = -np.partition(-scores, cutoff)[:cutoff]
-        indices = get_indices(scores, top_scores)
+        scores, indices = unsorted_top_k(scores, cutoff)
         unique_doc_ids = unique_doc_ids[indices]
-        scores = scores[indices]
 
-    indices = np.argsort(scores)[::-1]
+    indices = np.argsort(-scores)
 
     return unique_doc_ids[indices], scores[indices]
-
-
-# @njit(parallel=True, cache=True)
-# def bm25_multi(
-#     b: float,
-#     k1: float,
-#     term_doc_freqs: nb.typed.List[nb.typed.List[np.ndarray]],
-#     doc_ids: nb.typed.List[nb.typed.List[np.ndarray]],
-#     relative_doc_lens: nb.typed.List[nb.typed.List[np.ndarray]],
-#     cutoff: int,
-# ) -> Tuple[nb.typed.List[np.ndarray]]:
-#     unique_doc_ids = TypedList([np.empty(1, dtype=np.int32) for _ in doc_ids])
-#     scores = TypedList([np.empty(1, dtype=np.float32) for _ in doc_ids])
-
-#     for i in prange(len(term_doc_freqs)):
-#         unique_doc_ids[i], scores[i] = bm25(
-#             b=b,
-#             k1=k1,
-#             term_doc_freqs=term_doc_freqs[i],
-#             doc_ids=doc_ids[i],
-#             relative_doc_lens=relative_doc_lens,
-#             cutoff=cutoff,
-#         )
-
-#     return unique_doc_ids, scores
 
 
 @njit(parallel=True, cache=True)
@@ -105,7 +93,6 @@ def bm25_multi(
                 np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5)))
             )
 
-            # BM25_score = IDF * (tf * (k + 1)) / (k * (1.0 - b + b * (|d|/avgDl)) + tf)
             _scores[indices] += idf * (
                 (freqs * (k1 + 1.0))
                 / (freqs + k1 * (1.0 - b + (b * relative_doc_lens[indices])))
@@ -114,10 +101,8 @@ def bm25_multi(
         _scores = _scores[_unique_doc_ids]
 
         if cutoff < len(_scores):
-            top_scores = -np.partition(-_scores, cutoff)[:cutoff]
-            indices = get_indices(_scores, top_scores)
+            _scores, indices = unsorted_top_k(_scores, cutoff)
             _unique_doc_ids = _unique_doc_ids[indices]
-            _scores = _scores[indices]
 
         indices = np.argsort(_scores)[::-1]
 

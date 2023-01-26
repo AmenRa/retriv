@@ -3,7 +3,7 @@ from numba import njit
 
 
 @njit(cache=True)
-def join_sorted(a1, a2):
+def join_sorted(a1: np.array, a2: np.array):
     result = np.empty(len(a1) + len(a2), dtype=np.int32)
     i = 0
     j = 0
@@ -87,3 +87,21 @@ def get_indices(array, scores):
                         break
 
     return indices
+
+
+@njit(cache=True)
+def unsorted_top_k(array: np.ndarray, k: int):
+    top_k_values = np.zeros(k, dtype=np.float32)
+    top_k_indices = np.zeros(k, dtype=np.int32)
+
+    min_value = 0.0
+    min_value_idx = 0
+
+    for i, value in enumerate(array):
+        if value > min_value:
+            top_k_values[min_value_idx] = value
+            top_k_indices[min_value_idx] = i
+            min_value_idx = top_k_values.argmin()
+            min_value = top_k_values[min_value_idx]
+
+    return top_k_values, top_k_indices
