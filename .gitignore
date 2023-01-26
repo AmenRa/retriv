@@ -1,7 +1,9 @@
+/*.ipynb
 /beir
 /dictionaries
 /collections
 /datasets
+/bkp
 *.npy
 *.tar.gz
 *.csv
