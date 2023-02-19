@@ -5,7 +5,6 @@ __all__ = [
     "normalize_special_chars",
     "remove_punctuation",
     "strip_whitespaces",
-    "get_spell_corrector",
     "get_stemmer",
     "get_tokenizer",
     "get_stopwords",
@@ -23,7 +22,6 @@ from .normalization import (
     remove_punctuation,
     strip_whitespaces,
 )
-from .spell_corrector import get_spell_corrector
 from .stemmer import get_stemmer
 from .stopwords import get_stopwords
 from .tokenizer import get_tokenizer
@@ -34,7 +32,6 @@ def preprocessing(
     tokenizer: Callable,
     stopwords: Set[str],
     stemmer: Callable,
-    spell_corrector: Callable,
     do_lowercasing: bool,
     do_ampersand_normalization: bool,
     do_special_chars_normalization: bool,
@@ -60,7 +57,6 @@ def preprocessing(
         x = [remove_punctuation(t) for t in x]
         x = [t for t in x if t]
 
-    x = [spell_corrector(t) for t in x]
     x = [t for t in x if t not in stopwords]
 
     return [stemmer(t) for t in x]
@@ -75,7 +71,6 @@ def prepare_inputs(
     tokenizer: callable,
     stopwords: List[str],
     stemmer: callable,
-    spell_corrector: callable,
     do_lowercasing: bool,
     do_ampersand_normalization: bool,
     do_special_chars_normalization: bool,
@@ -88,7 +83,6 @@ def prepare_inputs(
             tokenizer,
             stopwords,
             stemmer,
-            spell_corrector,
             do_lowercasing,
             do_ampersand_normalization,
             do_special_chars_normalization,
@@ -102,7 +96,6 @@ def multi_preprocessing(
     tokenizer: callable,
     stopwords: List[str],
     stemmer: callable,
-    spell_corrector: callable,
     do_lowercasing: bool,
     do_ampersand_normalization: bool,
     do_special_chars_normalization: bool,
@@ -115,7 +108,6 @@ def multi_preprocessing(
         tokenizer=tokenizer,
         stopwords=stopwords,
         stemmer=stemmer,
-        spell_corrector=spell_corrector,
         do_lowercasing=do_lowercasing,
         do_ampersand_normalization=do_ampersand_normalization,
         do_special_chars_normalization=do_special_chars_normalization,

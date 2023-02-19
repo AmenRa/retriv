@@ -1,6 +1,6 @@
 import pytest
 
-from retriv.preprocessing.tokenizer import get_tokenizer
+from retriv.sparse_retriever.preprocessing.tokenizer import get_tokenizer
 
 
 # FIXTURES =====================================================================

@@ -1,18 +1,15 @@
 import pytest
 
-from retriv.preprocessing import multi_preprocessing, preprocessing
-from retriv.preprocessing.spell_corrector import get_spell_corrector
-from retriv.preprocessing.stemmer import get_stemmer
-from retriv.preprocessing.stopwords import get_stopwords
-from retriv.preprocessing.tokenizer import get_tokenizer
+from retriv.sparse_retriever.preprocessing import (
+    multi_preprocessing,
+    preprocessing,
+)
+from retriv.sparse_retriever.preprocessing.stemmer import get_stemmer
+from retriv.sparse_retriever.preprocessing.stopwords import get_stopwords
+from retriv.sparse_retriever.preprocessing.tokenizer import get_tokenizer
 
 
 # FIXTURES =====================================================================
-@pytest.fixture
-def spell_corrector():
-    return get_spell_corrector("english")
-
-
 @pytest.fixture
 def stemmer():
     return get_stemmer("english")
@@ -39,13 +36,10 @@ def docs():
 
 
 # TESTS ========================================================================
-def test_multi_preprocessing(
-    docs, spell_corrector, stemmer, stopwords, tokenizer
-):
+def test_multi_preprocessing(docs, stemmer, stopwords, tokenizer):
     out = [
         preprocessing(
             doc,
-            spell_corrector=spell_corrector,
             stemmer=stemmer,
             stopwords=stopwords,
             tokenizer=tokenizer,
@@ -60,7 +54,6 @@ def test_multi_preprocessing(
     multi_out = list(
         multi_preprocessing(
             docs,
-            spell_corrector=spell_corrector,
             stemmer=stemmer,
             stopwords=stopwords,
             tokenizer=tokenizer,

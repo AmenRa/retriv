@@ -11,13 +11,13 @@ tokenizers_dict = {
     "sent": nltk.tokenize.sent_tokenize,
 }
 
-nltk.download("punkt", quiet=True)
-
 
 def _get_tokenizer(tokenizer: str) -> callable:
     assert (
         tokenizer.lower() in tokenizers_dict
     ), f"Tokenizer {tokenizer} not supported."
+    if tokenizer == "punkt":
+        nltk.download("punkt", quiet=True)
     return tokenizers_dict[tokenizer.lower()]
 
 

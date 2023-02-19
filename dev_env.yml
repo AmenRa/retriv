@@ -1,6 +1,6 @@
 name: retriv
 dependencies:
-  - python=3.7
+  - python=3.8
   - black
   - conda-forge::icecream
   - isort
@@ -12,16 +12,8 @@ dependencies:
   - conda-forge::mkdocstrings-python 
   - pygments>=2.12
   - notebook
-  - numba
-  - numpy
-  - nltk
-  - conda-forge::orjson
   - pytest
-  - scikit-learn
-  - conda-forge::optuna
-  - rich
-  - tqdm
-  - unidecode
+  # Pip
   - pip
   - pip:
     - ranx
@@ -29,5 +21,23 @@ dependencies:
     - twine
     - oneliner_utils
     - indxr
-    - cyhunspell  # Cython wrapper on Hunspell Dictionary
     - pystemmer
+    - numpy
+    - nltk
+    - numba>=0.54.1
+    - tqdm
+    - optuna
+    - krovetzstemmer
+    - pystemmer==2.0.1
+    - unidecode
+    - scikit-learn
+    - ranx
+    - indxr
+    - oneliner_utils
+    - torch
+    - torchvision
+    - torchaudio
+    - transformers[torch]
+    - faiss-cpu
+    - autofaiss
+

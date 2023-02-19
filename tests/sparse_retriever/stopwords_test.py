@@ -1,6 +1,6 @@
 import pytest
 
-from retriv.preprocessing.stopwords import get_stopwords
+from retriv.sparse_retriever.preprocessing.stopwords import get_stopwords
 
 
 # FIXTURES =====================================================================

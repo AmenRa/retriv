@@ -2,7 +2,7 @@ from math import isclose
 
 import pytest
 
-from retriv.search_engine import SearchEngine
+from retriv import SearchEngine
 
 REL_TOL = 1e-6
 

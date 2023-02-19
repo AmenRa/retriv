@@ -5,23 +5,7 @@ import numpy as np
 from numba import njit, prange
 from numba.typed import List as TypedList
 
-from ..utils.numba_utils import join_sorted_multi_recursive, unsorted_top_k
-
-
-@njit(cache=True)
-def bm25_score(
-    b: float,
-    k1: float,
-    tfs: np.ndarray,
-    doc_ids: np.ndarray,
-    relative_doc_lens: np.ndarray,
-    doc_count: int,
-) -> np.ndarray:
-    # BM25_score = IDF * (tf * (k + 1)) / (k * (1.0 - b + b * (|d|/avgDl)) + tf)
-    df = np.float32(len(doc_ids))
-    idf = np.float32(np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5))))
-    doc_lens = relative_doc_lens[doc_ids]
-    return idf * ((tfs * (k1 + 1.0)) / (tfs + k1 * (1.0 - b + (b * doc_lens))))
+from ...utils.numba_utils import join_sorted_multi_recursive, unsorted_top_k
 
 
 @njit(cache=True)
@@ -31,11 +15,11 @@ def bm25(
     term_doc_freqs: nb.typed.List[np.ndarray],
     doc_ids: nb.typed.List[np.ndarray],
     relative_doc_lens: nb.typed.List[np.ndarray],
+    doc_count: int,
     cutoff: int,
 ) -> Tuple[np.ndarray]:
     unique_doc_ids = join_sorted_multi_recursive(doc_ids)
 
-    doc_count = len(relative_doc_lens)
     scores = np.empty(doc_count, dtype=np.float32)
     scores[unique_doc_ids] = 0.0  # Initialize scores
 
@@ -62,13 +46,14 @@ def bm25(
     return unique_doc_ids[indices], scores[indices]
 
 
-@njit(parallel=True, cache=True)
+@njit(cache=True, parallel=True)
 def bm25_multi(
     b: float,
     k1: float,
     term_doc_freqs: nb.typed.List[nb.typed.List[np.ndarray]],
     doc_ids: nb.typed.List[nb.typed.List[np.ndarray]],
-    relative_doc_lens: nb.typed.List[nb.typed.List[np.ndarray]],
+    relative_doc_lens: nb.typed.List[np.ndarray],
+    doc_count: int,
     cutoff: int,
 ) -> Tuple[nb.typed.List[np.ndarray]]:
     unique_doc_ids = TypedList([np.empty(1, dtype=np.int32) for _ in doc_ids])
@@ -80,7 +65,6 @@ def bm25_multi(
 
         _unique_doc_ids = join_sorted_multi_recursive(_doc_ids)
 
-        doc_count = len(relative_doc_lens)
         _scores = np.empty(doc_count, dtype=np.float32)
         _scores[_unique_doc_ids] = 0.0  # Initialize _scores
 

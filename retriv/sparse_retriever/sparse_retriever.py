@@ -1,44 +1,37 @@
 import os
-import shutil
-from pathlib import Path
 from typing import Dict, Iterable, List, Set, Union
 
 import numba as nb
 import numpy as np
 import orjson
-from indxr import Indxr
 from numba.typed import List as TypedList
-from oneliner_utils import create_path, read_csv, read_jsonl
+from oneliner_utils import create_path, read_jsonl
 from tqdm import tqdm
 
-from .autotune import tune_bm25
+from ..autotune import tune_bm25
+from ..base_retriever import BaseRetriever
+from ..paths import docs_path, sr_state_path
 from .build_inverted_index import build_inverted_index
 from .preprocessing import (
-    get_spell_corrector,
     get_stemmer,
     get_stopwords,
     get_tokenizer,
     multi_preprocessing,
     preprocessing,
 )
-from .retrieval_functions.bm25 import bm25, bm25_multi
+from .sparse_retrieval_models.bm25 import bm25, bm25_multi
+from .sparse_retrieval_models.tf_idf import tf_idf, tf_idf_multi
 
 
-def home_path():
-    p = Path(Path.home() / ".retriv" / "collections")
-    p.mkdir(parents=True, exist_ok=True)
-    return p
-
-
-class SearchEngine:
+class SparseRetriever(BaseRetriever):
     def __init__(
         self,
         index_name: str = "new-index",
+        model: str = "bm25",
         min_df: int = 1,
         tokenizer: Union[str, callable] = "whitespace",
         stemmer: Union[str, callable] = "english",
         stopwords: Union[str, List[str], Set[str]] = "english",
-        spell_corrector: str = None,
         do_lowercasing: bool = True,
         do_ampersand_normalization: bool = True,
         do_special_chars_normalization: bool = True,
@@ -46,8 +39,11 @@ class SearchEngine:
         do_punctuation_removal: bool = True,
         hyperparams: dict = None,
     ):
+        assert model.lower() in {"bm25", "tf-idf"}
         assert min_df > 0, "`min_df` must be greater than zero."
         self.init_args = {
+            "model": model.lower(),
+            "min_df": min_df,
             "index_name": index_name,
             "do_lowercasing": do_lowercasing,
             "do_ampersand_normalization": do_ampersand_normalization,
@@ -57,13 +53,11 @@ class SearchEngine:
             "tokenizer": tokenizer,
             "stemmer": stemmer,
             "stopwords": stopwords,
-            "spell_corrector": spell_corrector,
         }
-        self.min_df = min_df
 
+        self.model = model.lower()
+        self.min_df = min_df
         self.index_name = index_name
-        self.index_path = home_path() / index_name
-        self.index_path.mkdir(parents=True, exist_ok=True)
 
         self.do_lowercasing = do_lowercasing
         self.do_ampersand_normalization = do_ampersand_normalization
@@ -74,22 +68,20 @@ class SearchEngine:
         self.tokenizer = get_tokenizer(tokenizer)
         self.stemmer = get_stemmer(stemmer)
         self.stopwords = [self.stemmer(sw) for sw in get_stopwords(stopwords)]
-        self.spell_corrector = get_spell_corrector(spell_corrector)
 
         self.id_mapping = None
         self.inverted_index = None
         self.vocabulary = None
         self.doc_count = None
         self.doc_lens = None
+        self.avg_doc_len = None
         self.relative_doc_lens = None
-        self.docs_path = None
         self.doc_index = None
 
         self.preprocessing_args = {
             "tokenizer": self.tokenizer,
             "stemmer": self.stemmer,
             "stopwords": self.stopwords,
-            "spell_corrector": self.spell_corrector,
             "do_lowercasing": self.do_lowercasing,
             "do_ampersand_normalization": self.do_ampersand_normalization,
             "do_special_chars_normalization": self.do_special_chars_normalization,
@@ -102,11 +94,8 @@ class SearchEngine:
         )
 
     def save(self):
-        print(f"Saving {self.index_name} index on disk...")
-
         state = {
             "init_args": self.init_args,
-            "docs_path": self.docs_path,
             "id_mapping": self.id_mapping,
             "doc_count": self.doc_count,
             "inverted_index": self.inverted_index,
@@ -116,17 +105,16 @@ class SearchEngine:
             "hyperparams": self.hyperparams,
         }
 
-        np.save(self.index_path / "index.npy", state)
+        np.savez_compressed(sr_state_path(self.index_name), state=state)
 
     @staticmethod
-    def load(index_name="new-index"):
-        print(f"Loading {index_name} from disk...")
+    def load(index_name: str = "new-index"):
+        state = np.load(sr_state_path(index_name), allow_pickle=True)["state"][
+            ()
+        ]
 
-        index_path = home_path() / index_name / "index.npy"
-        state = np.load(index_path, allow_pickle=True)[()]
-        se = SearchEngine(**state["init_args"])
-        se.docs_path = state["docs_path"]
-        se.doc_index = Indxr(se.docs_path)
+        se = SparseRetriever(**state["init_args"])
+        se.initialize_doc_index()
         se.id_mapping = state["id_mapping"]
         se.doc_count = state["doc_count"]
         se.inverted_index = state["inverted_index"]
@@ -135,84 +123,24 @@ class SearchEngine:
         se.relative_doc_lens = state["relative_doc_lens"]
         se.hyperparams = state["hyperparams"]
 
+        state = {
+            "init_args": se.init_args,
+            "id_mapping": se.id_mapping,
+            "doc_count": se.doc_count,
+            "inverted_index": se.inverted_index,
+            "vocabulary": se.vocabulary,
+            "doc_lens": se.doc_lens,
+            "relative_doc_lens": se.relative_doc_lens,
+            "hyperparams": se.hyperparams,
+        }
+
         return se
 
-    @staticmethod
-    def delete(index_name="new-index"):
-        try:
-            shutil.rmtree(home_path() / index_name)
-            print(f"{index_name} successfully removed.")
-        except FileNotFoundError:
-            print(f"{index_name} not found.")
-
-    def collection_generator(
-        self,
-        path: str,
-        callback: callable = None,
-    ):
-        kind = os.path.splitext(path)[1][1:]
-        assert kind in {
-            "jsonl",
-            "csv",
-            "tsv",
-        }, "Only JSONl, CSV, and TSV are currently supported."
-
-        if kind == "jsonl":
-            collection = read_jsonl(path, generator=True, callback=callback)
-        elif kind == "csv":
-            collection = read_csv(path, generator=True, callback=callback)
-        elif kind == "tsv":
-            collection = read_csv(
-                path, delimiter="\t", generator=True, callback=callback
-            )
-
-        return collection
-
-    def save_collection(
-        self,
-        collection: Iterable,
-        callback: callable = None,
-        show_progress: bool = True,
-    ):
-        if show_progress:
-            print("Saving collection...")
-
-        self.docs_path = str(self.index_path / "docs.jsonl")
-
-        with open(self.docs_path, "wb") as f:
-            for doc in collection:
-                x = callback(doc) if callback is not None else doc
-                f.write(orjson.dumps(x) + "\n".encode())
-
-    def initialize_doc_index(self):
-        self.doc_index = Indxr(self.docs_path)
-
-    def initialize_id_mapping(self):
-        ids = read_jsonl(
-            self.docs_path, generator=True, callback=lambda x: x["id"]
-        )
-        self.id_mapping = dict(enumerate(ids))
-
-    def initialize_id_mapping(self):
-        ids = read_jsonl(
-            self.docs_path, generator=True, callback=lambda x: x["id"]
-        )
-        self.id_mapping = dict(enumerate(ids))
-
-    def index(
-        self,
-        collection: Iterable,
-        callback: callable = None,
-        show_progress: bool = True,
-    ):
-        self.save_collection(collection, callback, show_progress)
-
-        self.initialize_doc_index()
-        self.initialize_id_mapping()
-        self.doc_count = len(self.id_mapping)
-
+    def index_aux(self, show_progress: bool = True):
         collection = read_jsonl(
-            self.docs_path, generator=True, callback=lambda x: x["text"]
+            docs_path(self.index_name),
+            generator=True,
+            callback=lambda x: x["text"],
         )
 
         # Preprocessing --------------------------------------------------------
@@ -223,21 +151,38 @@ class SearchEngine:
         )  # This is a generator
 
         # Inverted index -------------------------------------------------------
-        self.inverted_index, self.relative_doc_lens = build_inverted_index(
+        (
+            self.inverted_index,
+            self.doc_lens,
+            self.relative_doc_lens,
+        ) = build_inverted_index(
             collection=collection,
             n_docs=self.doc_count,
             min_df=self.min_df,
             show_progress=show_progress,
         )
+        self.avg_doc_len = np.mean(self.doc_lens, dtype=np.float32)
         self.vocabulary = set(self.inverted_index)
 
+    def index(
+        self,
+        collection: Iterable,
+        callback: callable = None,
+        show_progress: bool = True,
+    ):
+        self.save_collection(collection, callback, show_progress)
+        self.initialize_doc_index()
+        self.initialize_id_mapping()
+        self.doc_count = len(self.id_mapping)
+        self.index_aux(show_progress)
         self.save()
+        return self
 
     def index_file(
         self, path: str, callback: callable = None, show_progress: bool = True
     ) -> None:
         collection = self.collection_generator(path=path, callback=callback)
-        self.index(collection=collection, show_progress=show_progress)
+        return self.index(collection=collection, show_progress=show_progress)
 
     # SEARCH ===================================================================
     def query_preprocessing(self, query: str) -> List[str]:
@@ -251,32 +196,7 @@ class SearchEngine:
             [self.inverted_index[t]["doc_ids"] for t in query_terms]
         )
 
-    def get_doc(self, doc_id: str) -> dict:
-        return self.doc_index.get(doc_id)
-
-    def get_docs(self, doc_ids: List[str]) -> List[dict]:
-        return self.doc_index.mget(doc_ids)
-
-    def prepare_results(
-        self, doc_ids: List[str], scores: np.ndarray
-    ) -> List[dict]:
-        docs = self.get_docs(doc_ids)
-        results = []
-        for doc, score in zip(docs, scores):
-            doc["score"] = score
-            results.append(doc)
-
-        return results
-
-    def map_internal_ids_to_original_ids(self, doc_ids: Iterable) -> List[str]:
-        return [self.id_mapping[doc_id] for doc_id in doc_ids]
-
-    def search(
-        self,
-        query: str,
-        return_docs: bool = True,
-        cutoff: int = 100,
-    ):
+    def search(self, query: str, return_docs: bool = True, cutoff: int = 100):
         query_terms = self.query_preprocessing(query)
         if not query_terms:
             return {}
@@ -287,13 +207,24 @@ class SearchEngine:
         doc_ids = self.get_doc_ids(query_terms)
         term_doc_freqs = self.get_term_doc_freqs(query_terms)
 
-        unique_doc_ids, scores = bm25(
-            term_doc_freqs=term_doc_freqs,
-            doc_ids=doc_ids,
-            relative_doc_lens=self.relative_doc_lens,
-            cutoff=cutoff,
-            **self.hyperparams,
-        )
+        if self.model == "bm25":
+            unique_doc_ids, scores = bm25(
+                term_doc_freqs=term_doc_freqs,
+                doc_ids=doc_ids,
+                relative_doc_lens=self.relative_doc_lens,
+                doc_count=self.doc_count,
+                cutoff=cutoff,
+                **self.hyperparams,
+            )
+        elif self.model == "tf-idf":
+            unique_doc_ids, scores = tf_idf(
+                term_doc_freqs=term_doc_freqs,
+                doc_ids=doc_ids,
+                doc_lens=self.doc_lens,
+                cutoff=cutoff,
+            )
+        else:
+            raise NotImplementedError()
 
         unique_doc_ids = self.map_internal_ids_to_original_ids(unique_doc_ids)
 
@@ -302,11 +233,7 @@ class SearchEngine:
 
         return self.prepare_results(unique_doc_ids, scores)
 
-    def msearch(
-        self,
-        queries: List[Dict[str, str]],
-        cutoff: int = 100,
-    ):
+    def msearch(self, queries: List[Dict[str, str]], cutoff: int = 100):
         term_doc_freqs = TypedList()
         doc_ids = TypedList()
         q_ids = []
@@ -331,16 +258,27 @@ class SearchEngine:
         if not q_ids:
             return {q_id: {} for q_id in [q["id"] for q in queries]}
 
-        unique_doc_ids, scores = bm25_multi(
-            term_doc_freqs=term_doc_freqs,
-            doc_ids=doc_ids,
-            relative_doc_lens=self.relative_doc_lens,
-            cutoff=cutoff,
-            **self.hyperparams,
-        )
+        if self.model == "bm25":
+            unique_doc_ids, scores = bm25_multi(
+                term_doc_freqs=term_doc_freqs,
+                doc_ids=doc_ids,
+                relative_doc_lens=self.relative_doc_lens,
+                doc_count=self.doc_count,
+                cutoff=cutoff,
+                **self.hyperparams,
+            )
+        elif self.model == "tf-idf":
+            unique_doc_ids, scores = tf_idf_multi(
+                term_doc_freqs=term_doc_freqs,
+                doc_ids=doc_ids,
+                doc_lens=self.doc_lens,
+                cutoff=cutoff,
+            )
+        else:
+            raise NotImplementedError()
 
         unique_doc_ids = [
-            [self.id_mapping[doc_id] for doc_id in _unique_doc_ids]
+            self.map_internal_ids_to_original_ids(_unique_doc_ids)
             for _unique_doc_ids in unique_doc_ids
         ]
 
@@ -359,14 +297,14 @@ class SearchEngine:
         self,
         queries: List[Dict[str, str]],
         cutoff: int = 100,
-        chunksize: int = 1_000,
-        show_progress=True,
+        batch_size: int = 1_000,
+        show_progress: bool = True,
         qrels: Dict[str, Dict[str, float]] = None,
         path: str = None,
     ):
-        chunks = [
-            queries[i : i + chunksize]
-            for i in range(0, len(queries), chunksize)
+        batches = [
+            queries[i : i + batch_size]
+            for i in range(0, len(queries), batch_size)
         ]
 
         results = {}
@@ -380,31 +318,33 @@ class SearchEngine:
         )
 
         if path is None:
-            for chunk in chunks:
-                new_results = self.msearch(queries=chunk, cutoff=cutoff)
+            for batch in batches:
+                new_results = self.msearch(queries=batch, cutoff=cutoff)
                 results = {**results, **new_results}
-                pbar.update(min(chunksize, len(chunk)))
+                pbar.update(min(batch_size, len(batch)))
         else:
             path = create_path(path)
             path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(path, "wb") as f:
-                for chunk in chunks:
-                    new_results = self.msearch(queries=chunk, cutoff=cutoff)
+                for batch in batches:
+                    new_results = self.msearch(queries=batch, cutoff=cutoff)
 
                     for i, (k, v) in enumerate(new_results.items()):
                         x = {
                             "id": k,
-                            "text": chunk[i]["text"],
-                            "bm25_doc_ids": list(v.keys()),
-                            "bm25_scores": [float(s) for s in list(v.values())],
+                            "text": batch[i]["text"],
+                            f"{self.model}_doc_ids": list(v.keys()),
+                            f"{self.model}_scores": [
+                                float(s) for s in list(v.values())
+                            ],
                         }
                         if qrels is not None:
                             x["rel_doc_ids"] = list(qrels[k].keys())
                             x["rel_scores"] = list(qrels[k].values())
                         f.write(orjson.dumps(x) + "\n".encode())
 
-                    pbar.update(min(chunksize, len(chunk)))
+                    pbar.update(min(batch_size, len(batch)))
 
         return results
 

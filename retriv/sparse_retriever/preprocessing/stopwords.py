@@ -2,8 +2,6 @@ from typing import List, Set, Union
 
 import nltk
 
-nltk.download("stopwords", quiet=True)
-
 supported_languages = {
     "arabic",
     "azerbaijani",
@@ -38,10 +36,10 @@ supported_languages = {
 
 
 def _get_stopwords(lang: str) -> List[str]:
+    nltk.download("stopwords", quiet=True)
     assert (
         lang.lower() in supported_languages
     ), f"Stop-words for {lang.capitalize()} are not available."
-
     return nltk.corpus.stopwords.words(lang)
 
 

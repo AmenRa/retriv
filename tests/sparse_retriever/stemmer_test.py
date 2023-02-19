@@ -1,6 +1,6 @@
 import pytest
 
-from retriv.preprocessing.stemmer import get_stemmer
+from retriv.sparse_retriever.preprocessing.stemmer import get_stemmer
 
 
 # FIXTURES =====================================================================
@@ -9,12 +9,9 @@ def supported_stemmers():
     # fmt: off
     return [
         "krovetz", "porter", "lancaster", "arlstem", "arlstem2", "cistem",
-        "isri", "rslp", "arabic",
-        # "armenian",
+        "isri", "arabic",
         "basque", "catalan", "danish", "dutch", "english", "finnish", "french", "german", "greek", "hindi", "hungarian", "indonesian", "irish", "italian", "lithuanian", "nepali", "norwegian", "portuguese", "romanian", "russian",
-        # "serbian",
         "spanish", "swedish", "tamil", "turkish",
-        # "yiddish"
         ]
     # fmt: on
 

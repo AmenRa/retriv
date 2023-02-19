@@ -7,8 +7,6 @@ from Stemmer import Stemmer as SnowballStemmer
 
 from .utils import identity_function
 
-nltk.download("rslp", quiet=True)
-
 stemmers_dict = {
     "krovetz": partial(KrovetzStemmer()),
     "porter": partial(nltk.stem.PorterStemmer().stem),
@@ -17,9 +15,7 @@ stemmers_dict = {
     "arlstem2": partial(nltk.stem.ARLSTem2().stem),  # Arabic
     "cistem": partial(nltk.stem.Cistem().stem),  # German
     "isri": partial(nltk.stem.ISRIStemmer().stem),  # Arabic
-    "rslp": partial(nltk.stem.RSLPStemmer().stem),  # Portuguese
     "arabic": partial(SnowballStemmer("arabic").stemWord),
-    # "armenian": partial(SnowballStemmer("armenian").stemWord),
     "basque": partial(SnowballStemmer("basque").stemWord),
     "catalan": partial(SnowballStemmer("catalan").stemWord),
     "danish": partial(SnowballStemmer("danish").stemWord),
@@ -40,13 +36,10 @@ stemmers_dict = {
     "portuguese": partial(SnowballStemmer("portuguese").stemWord),
     "romanian": partial(SnowballStemmer("romanian").stemWord),
     "russian": partial(SnowballStemmer("russian").stemWord),
-    # "serbian": partial(SnowballStemmer("serbian").stemWord),
     "spanish": partial(SnowballStemmer("spanish").stemWord),
     "swedish": partial(SnowballStemmer("swedish").stemWord),
     "tamil": partial(SnowballStemmer("tamil").stemWord),
     "turkish": partial(SnowballStemmer("turkish").stemWord),
-    # "yiddish": partial(SnowballStemmer("yiddish").stemWord),
-    # "porter": partial(SnowballStemmer("porter").stemWord),
 }
 
 
@@ -78,16 +71,8 @@ def isri_f(x: str) -> str:
     return stemmers_dict["isri"](x)
 
 
-def rslp_f(x: str) -> str:
-    return stemmers_dict["rslp"](x)
-
-
 def arabic_f(x: str) -> str:
     return stemmers_dict["arabic"](x)
-
-
-# def armenian_f(x: str) -> str:
-#     return stemmers_dict["armenian"](x)
 
 
 def basque_f(x: str) -> str:
@@ -170,10 +155,6 @@ def russian_f(x: str) -> str:
     return stemmers_dict["russian"](x)
 
 
-# def serbian_f(x: str) -> str:
-#     return stemmers_dict["serbian"](x)
-
-
 def spanish_f(x: str) -> str:
     return stemmers_dict["spanish"](x)
 
@@ -190,10 +171,6 @@ def turkish_f(x: str) -> str:
     return stemmers_dict["turkish"](x)
 
 
-# def yiddish_f(x: str) -> str:
-#     return stemmers_dict["yiddish"](x)
-
-
 stemmers_f_dict = {
     "krovetz": krovetz_f,
     "porter": porter_f,
@@ -202,9 +179,7 @@ stemmers_f_dict = {
     "arlstem2": arlstem2_f,
     "cistem": cistem_f,
     "isri": isri_f,
-    "rslp": rslp_f,
     "arabic": arabic_f,
-    # "armenian": armenian_f,
     "basque": basque_f,
     "catalan": catalan_f,
     "danish": danish_f,
@@ -225,12 +200,10 @@ stemmers_f_dict = {
     "portuguese": portuguese_f,
     "romanian": romanian_f,
     "russian": russian_f,
-    # "serbian": serbian_f,
     "spanish": spanish_f,
     "swedish": swedish_f,
     "tamil": tamil_f,
     "turkish": turkish_f,
-    # "yiddish": yiddish_f,
 }
 
 

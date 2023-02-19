@@ -23,80 +23,72 @@
   </a>
 </p>
 
+## 🔥 News
+- [February 18, 2023] `retriv` 0.2.0 is out!  
+This adds support for Dense and Hybrid Retrieval.
+Dense Retrieval leverages the semantic similarity of the queries' and documents' vector representations, which can be computed directly by `retriv` or imported from other sources.
+Hybrid Retrieval mix traditional retrieval, informally called Sparse Retrieval,  and Dense Retrieval results to further improve retrieval effectiveness.
+As the library was almost completely redone, indices built with previous versions are no longer supported.
+
 ## ⚡️ Introduction
 
-[retriv](https://github.com/AmenRa/retriv) is a fast [search engine](https://en.wikipedia.org/wiki/Search_engine) implemented in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)), leveraging [Numba](https://github.com/numba/numba) for high-speed [vector operations](https://en.wikipedia.org/wiki/Automatic_vectorization) and [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization).
-It offers a user-friendly interface to index and search your document collection and allows you to automatically tune the underling retrieval model, [BM25](https://en.wikipedia.org/wiki/Okapi_BM25).
+[retriv](https://github.com/AmenRa/retriv) is a user-friendly and efficient [search engine](https://en.wikipedia.org/wiki/Search_engine) implemented in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)) supporting Sparse (traditional earch with [BM25](https://en.wikipedia.org/wiki/Okapi_BM25), [TF-IDF](https://en.wikipedia.org/wiki/Tf–idf)), Dense ([semantic search](https://en.wikipedia.org/wiki/Semantic_search)) and Hybrid retrieval (a mix of Sparse and Dense Retrieval).
+It allows you to build a search engine in a __single line of code__.
+
+[retriv](https://github.com/AmenRa/retriv) is built upon [Numba](https://github.com/numba/numba) for high-speed [vector operations](https://en.wikipedia.org/wiki/Automatic_vectorization) and [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization), [PyTorch](https://pytorch.org) and [Transformers](https://huggingface.co/docs/transformers/index) for easy access and usage of [Transformer-based Language Models](https://web.stanford.edu/~jurafsky/slp3/10.pdf), and [Faiss](https://github.com/facebookresearch/faiss) for approximate [nearest neighbor search](https://en.wikipedia.org/wiki/Nearest_neighbor_search).
+In addition, it provides automatic tuning functionalities to allow you to tune its internal components with minimal intervention.
 
 [How fast is your retriv?](#speed-comparison)
 
 
-## ✨ Features
+## ✨ Main Features
 
-### Retrieval Models
-[retriv](https://github.com/AmenRa/retriv) implements [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) as a retrieval model. Alternatives will probably be added in the future.
+### Retrievers
+- [Sparse Retriever](https://github.com/AmenRa/retriv/blob/main/docs/sparse_retriever.md): standard searcher based on lexical matching. 
+[retriv](https://github.com/AmenRa/retriv) implements [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) as its main retrieval model.
+[TF-IDF](https://en.wikipedia.org/wiki/Tf–idf) is also supported for educational purposes.
+The sparse retriever comes armed with multiple [stemmers](https://en.wikipedia.org/wiki/Stemming), [tokenizers](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization), and [stop-word](https://en.wikipedia.org/wiki/Stop_word) lists, for multiple languages.
+Click [here](https://github.com/AmenRa/retriv/blob/main/docs/sparse_retriever.md) to learn more.
+- [Dense Retriever](https://github.com/AmenRa/retriv/blob/main/docs/dense_retriever.md): a dense retriever is a retrieval model that performs [semantic search](https://en.wikipedia.org/wiki/Semantic_search). 
+Click [here](https://github.com/AmenRa/retriv/blob/main/docs/dense_retriever.md) to learn more.
+- [Hybrid Retriever](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md): an hybrid retriever is a retrieval model built on top of a sparse and a dense retriever.
+Click [here](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md) to learn more.
 
-
-### Multi-search & Batch-search
-In addition to the standard [search](#search) functionality, [retriv](https://github.com/AmenRa/retriv) provides two additional search methods: [msearch](#multi-search) and [bsearch](#batch-search).
-- [msearch](#multi-search) allows computing the results for multiple queries at once, leveraging the [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization) features offered by [Numba](https://github.com/numba/numba).
-- [bsearch](#batch-search) is similar to [msearch](#multi-search) but automatically generates batches of queries to evaluate and allows dynamic writing of the search results to disk in [JSONl](https://jsonlines.org) format. [bsearch](#batch-search) is very useful for pre-computing [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) results for hundred of thousands or even millions of queries without hogging your RAM. Pre-computed results can be leveraged for negative sampling during the training of [Neural Models](https://en.wikipedia.org/wiki/Artificial_neural_network) for [Information Retrieval](https://en.wikipedia.org/wiki/Information_retrieval).
-
+### Unified Search Interface
+All the supported retrievers share the same search interface:
+- [search](#search): standard search functionality, what you expect by a search engine.
+- [msearch](#multi-search): computes the results for multiple queries at once.
+It leverages [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization) whenever possible.
+- [bsearch](#batch-search): similar to [msearch](#multi-search) but automatically generates batches of queries to evaluate and allows dynamic writing of the search results to disk in [JSONl](https://jsonlines.org) format. [bsearch](#batch-search) is handy for computing results for hundreds of thousands or even millions of queries without hogging your RAM. Pre-computed results can be leveraged for negative sampling during the training of [Neural Models](https://en.wikipedia.org/wiki/Artificial_neural_network) for [Information Retrieval](https://en.wikipedia.org/wiki/Information_retrieval).
 
 ### AutoTune
-[retriv](https://github.com/AmenRa/retriv) offers an automatic tuning functionality that allows you to tune [BM25](https://en.wikipedia.org/wiki/Okapi_BM25)'s parameters with a single function call.
+[retriv](https://github.com/AmenRa/retriv) automatically tunes [Faiss](https://github.com/facebookresearch/faiss) configuration for approximate nearest neighbors search by leveraging [AutoFaiss](https://github.com/criteo/autofaiss) to guarantee 10ms response time based on your available hardware.
+Moreover, it offers an automatic tuning functionality for [BM25](https://en.wikipedia.org/wiki/Okapi_BM25)'s parameters, which require minimal user intervention.
 Under the hood, [retriv](https://github.com/AmenRa/retriv) leverages [Optuna](https://optuna.org), a [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization) framework, and [ranx](https://github.com/AmenRa/ranx), an [Information Retrieval](https://en.wikipedia.org/wiki/Information_retrieval) evaluation library, to test several parameter configurations for [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) and choose the best one.
+Finally, it can automatically balance the importance of lexical and semantic relevance scores computed by the [Hybrid Retriever](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md) to maximize retrieval effectiveness.
 
+## 📚 Documentation
 
-### Stemmers
-[Stemmers](https://en.wikipedia.org/wiki/Stemming) reduce words to their word stem, base or root form.  
-[retriv](https://github.com/AmenRa/retriv) supports the following stemmers:
-- [snowball](https://snowballstem.org) (default)  
-The following languages are supported by Snowball Stemmer: 
-Arabic, Basque, Catalan, Danish, Dutch, English, Finnish, French, German, Greek, Hindi, Hungarian, Indonesian, Irish, Italian, Lithuanian, Nepali, Norwegian, Portuguese, Romanian, Russian, Spanish, Swedish, Tamil, Turkish.  
-To select your preferred language simply use `<language>` .
-- [arlstem](https://www.nltk.org/api/nltk.stem.arlstem.html) (Arabic)
-- [arlstem2](https://www.nltk.org/api/nltk.stem.arlstem2.html) (Arabic)
-- [cistem](https://www.nltk.org/api/nltk.stem.cistem.html) (German)
-- [isri](https://www.nltk.org/api/nltk.stem.isri.html) (Arabic)
-- [krovetz](https://dl.acm.org/doi/10.1145/160688.160718) (English)
-- [lancaster](https://www.nltk.org/api/nltk.stem.lancaster.html) (English)
-- [porter](https://www.nltk.org/api/nltk.stem.porter.html) (English)
-- [rslp](https://www.nltk.org/api/nltk.stem.rslp.html) (Portuguese)
+- [Sparse Retriever](https://github.com/AmenRa/retriv/blob/main/docs/sparse_retriever.md)
+- [Dense Retriever](https://github.com/AmenRa/retriv/blob/main/docs/dense_retriever.md)
+- [Hybrid Retriever](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md)
+- [Text Pre-Processing](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md)
+- [FAQ](https://github.com/AmenRa/retriv/blob/main/docs/faq.md)
 
+## 🔌 Requirements
+```
+python>=3.8
+```
 
-### Tokenizers
-[Tokenizers](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization) divide a string into smaller units, such as words.  
-[retriv](https://github.com/AmenRa/retriv) supports the following tokenizers:
-- [whitespace](https://www.nltk.org/api/nltk.tokenize.html)
-- [word](https://www.nltk.org/api/nltk.tokenize.html)
-- [wordpunct](https://www.nltk.org/api/nltk.tokenize.html)
-- [sent](https://www.nltk.org/api/nltk.tokenize.html)
-
-
-### Stop-word Lists
-[retriv](https://github.com/AmenRa/retriv) supports [stop-word](https://en.wikipedia.org/wiki/Stop_word) lists for the following languages: Arabic, Azerbaijani, Basque, Bengali, Catalan, Chinese, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew, Hinglish, Hungarian, Indonesian, Italian, Kazakh, Nepali, Norwegian, Portuguese, Romanian, Russian, Slovene, Spanish, Swedish, Tajik, and Turkish.
-
-
-### Automatic Spell Correction
-[retriv](https://github.com/AmenRa/retriv) provides automatic spell correction through [Hunspell](http://hunspell.github.io) for [92 languages](https://github.com/wooorm/dictionaries#list-of-dictionaries).
-Please, follow the link and choose your preferred language (e.g., Italian → "dictionary-it" → use "it").
-For some languages you can directly pass their names: Danish, Dutch, English, Finnish, French, German, Greek, Hungarian, Italian, Portuguese, Romanian, Russian, Spanish, and Swedish.  
-
-_NOTE: Automatic spell correction is disabled by default. It can introduce artifacts, degrading retrieval performances when documents are free from misspellings. If possible, check whether it can improve retrieval performances for your specific document collection._
-
-## 🔌 Installation
+## 💾 Installation
 ```bash
 pip install retriv
 ```
 
-
-
-## 💡 Usage
-
-### Minimal Working Example
+## 💡 Minimal Working Example
 
 ```python
+# Note: SearchEngine is an alias for the SparseRetriever
 from retriv import SearchEngine
 
 collection = [
@@ -106,8 +98,7 @@ collection = [
   {"id": "doc_4", "text": "Sorcerer of death's construction"},
 ]
 
-se = SearchEngine("new-index")
-se.index(collection)
+se = SearchEngine("new-index").index(collection)
 
 se.search("witches masses")
 ```
@@ -127,167 +118,9 @@ Output:
 ]
 ```
 
-### Create index from file
-You can index a document collection from a JSONl, CSV, or TSV file.
-CSV and TSV files must have a header.
-File kind is automatically inferred.
-Use the `callback` parameter to pass a function for converting your documents in the format supported by [retriv](https://github.com/AmenRa/retriv) on the fly.
-Indexes are automatically saved.
-This is the preferred way of creating indexes as it has a low memory footprint.
-
-```python
-from retriv import SearchEngine
-
-se = SearchEngine("new-index")
-
-se.index_file(
-  path="path/to/collection",  # File kind is automatically inferred
-  show_progress=True,         # Default value
-  callback=lambda doc: {      # Callback defaults to None
-    "id": doc["id"],
-    "text": doc["title"] + "\n" + doc["body"],          
-  )
-```
-
-`se = SearchEngine("new-index")` is equivalent to:
-```python
-se = SearchEngine(
-  index_name="new-index",               # Default value
-  min_df=1,                             # Min doc-frequency. Defaults to 1.
-  tokenizer="whitespace",               # Default value
-  stemmer="english",                    # Default value (Snowball English)
-  stopwords="english",                  # Default value
-  spell_corrector=None,                 # Default value
-  do_lowercasing=True,                  # Default value
-  do_ampersand_normalization=True,      # Default value
-  do_special_chars_normalization=True,  # Default value
-  do_acronyms_normalization=True,       # Default value
-  do_punctuation_removal=True,          # Default value
-)
-```
 
 
-### Create index from list 
-```python
-collection = [
-  {"id": "doc_1", "title": "...", "body": "..."},
-  {"id": "doc_2", "title": "...", "body": "..."},
-  {"id": "doc_3", "title": "...", "body": "..."},
-  {"id": "doc_4", "title": "...", "body": "..."},
-]
 
-se = SearchEngine(...)
-
-se.index(
-  collection,
-  show_progress=True,         # Default value
-  callback=lambda doc: {      # Callback defaults to None
-    "id": doc["id"],
-    "text": doc["title"] + "\n" + doc["body"],          
-  )
-)
-```
-
-
-### Load / Delete index
-```python
-from retriv import SearchEngine
-
-se = SearchEngine.load("index-name")
-
-SearchEngine.delete("index-name")
-```
-
-
-### Search
-```python
-se.search(
-  query="witches masses",
-  return_docs=True,  # Default value
-  cutoff=100,        # Default value, number of results to return
-)
-```
-Output:
-```python
-[
-  {
-    "id": "doc_2",
-    "text": "Just like witches at black masses",
-    "score": 1.7536403
-  },
-  {
-    "id": "doc_1",
-    "text": "Generals gathered in their masses",
-    "score": 0.6931472
-  }
-]
-```
-
-
-### Multi-Search
-```python
-se.msearch(
-  queries=[{"id": "q_1", "text": "witches masses"}, ...],
-  cutoff=100,  # Default value, number of results
-)
-```
-Output:
-```python
-{
-  "q_1": {
-    "doc_2": 1.7536403,
-    "doc_1": 0.6931472
-  },
-  ...
-}
-```
-
-
-### AutoTune
-
-Use the AutoTune function to tune [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) parameters w.r.t. your document collection and queries.
-All metrics supported by [ranx](https://github.com/AmenRa/ranx) are supported by the `autotune` function.
-
-```python
-se.autotune(
-    queries=[{ "q_id": "q_1", "text": "...", ... }],  # Train queries
-    qrels=[{ "q_1": { "doc_1": 1, ... }, ... }],      # Train qrels
-    metric="ndcg",  # Default value, metric to maximize
-    n_trials=100,   # Default value, number of trials
-    cutoff=100,     # Default value, number of results
-)
-```
-
-At the of the process, the best parameter configuration is automatically applied to the `SearchEngine` instance and saved to disk.
-You can see what the configuration is by printing `se.hyperparams`.
-
-## Speed Comparison
-
-We performed a speed test, comparing [retriv](https://github.com/AmenRa/retriv) to [rank_bm25](https://github.com/dorianbrown/rank_bm25), a popular [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) implementation in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)), and [pyserini](https://github.com/castorini/pyserini), a [Python](https://en.wikipedia.org/wiki/Python_(programming_language)) binding to the [Lucene](https://en.wikipedia.org/wiki/Apache_Lucene) search engine.
-
-We relied on the [MSMARCO Passage](https://microsoft.github.io/msmarco) dataset to collect documents and queries.
-Specifically, we used the original document collection and three sub-samples of it, accounting for 1k, 100k, and 1M documents, respectively, and sampled 1k queries from the original ones.
-We computed the top-100 results with each library (if possible). 
-Results are reported below. Best results are highlighted in boldface.
-
-| Library                                                   | Collection Size | Elapsed Time | Avg. Query Time | Throughput (q/s) |
-| --------------------------------------------------------- | --------------: | -----------: | --------------: | ---------------: |
-| [rank_bm25](https://github.com/dorianbrown/rank_bm25)     |           1,000 |        646ms |           6.5ms |           1548/s |
-| [pyserini](https://github.com/castorini/pyserini)         |           1,000 |      1,438ms |           1.4ms |            695/s |
-| [retriv](https://github.com/AmenRa/retriv)                |           1,000 |        140ms |           0.1ms |           7143/s |
-| [retriv](https://github.com/AmenRa/retriv) (multi-search) |           1,000 |    __134ms__ |       __0.1ms__ |       __7463/s__ |
-| [rank_bm25](https://github.com/dorianbrown/rank_bm25)     |         100,000 |    106,000ms |          1060ms |              1/s |
-| [pyserini](https://github.com/castorini/pyserini)         |         100,000 |      2,532ms |           2.5ms |            395/s |
-| [retriv](https://github.com/AmenRa/retriv)                |         100,000 |        314ms |           0.3ms |           3185/s |
-| [retriv](https://github.com/AmenRa/retriv) (multi-search) |         100,000 |    __256ms__ |       __0.3ms__ |       __3906__/s |
-| [rank_bm25](https://github.com/dorianbrown/rank_bm25)     |       1,000,000 |          N/A |             N/A |              N/A |
-| [pyserini](https://github.com/castorini/pyserini)         |       1,000,000 |      4,060ms |           4.1ms |            246/s |
-| [retriv](https://github.com/AmenRa/retriv)                |       1,000,000 |      1,018ms |           1.0ms |            982/s |
-| [retriv](https://github.com/AmenRa/retriv) (multi-search) |       1,000,000 |    __503ms__ |       __0.5ms__ |       __1988/s__ |
-| [rank_bm25](https://github.com/dorianbrown/rank_bm25)     |       8,841,823 |          N/A |             N/A |              N/A |
-| [pyserini](https://github.com/castorini/pyserini)         |       8,841,823 |     12,245ms |          12.2ms |             82/s |
-| [retriv](https://github.com/AmenRa/retriv)                |       8,841,823 |     10,763ms |          10.8ms |             93/s |
-| [retriv](https://github.com/AmenRa/retriv) (multi-search) |       8,841,823 |  __4,476ms__ |       __4.4ms__ |        __227/s__ |
 
 
 ## 🎁 Feature Requests

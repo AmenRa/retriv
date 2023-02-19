@@ -37,6 +37,7 @@ def build_inverted_index(
         preprocessor=lambda x: x,
         min_df=min_df,
         dtype=np.int16,
+        token_pattern=None,
     )
 
     # [n_docs x n_terms]
@@ -62,4 +63,4 @@ def build_inverted_index(
     doc_lens = np.squeeze(np.asarray(df_matrix.sum(axis=0), dtype=np.float32))
     relative_doc_lens = doc_lens / np.mean(doc_lens, dtype=np.float32)
 
-    return dict(inverted_index), relative_doc_lens
+    return dict(inverted_index), doc_lens, relative_doc_lens

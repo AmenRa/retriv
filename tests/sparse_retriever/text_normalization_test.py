@@ -1,6 +1,6 @@
 import pytest
 
-from retriv.preprocessing.normalization import (
+from retriv.sparse_retriever.preprocessing.normalization import (
     lowercasing,
     normalize_acronyms,
     normalize_ampersand,
