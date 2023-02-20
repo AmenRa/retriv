@@ -14,7 +14,7 @@ Default parameter values are shown.
 ```python
 from retriv import HybridRetriever
 
-sr = HybridRetriever(
+hr = HybridRetriever(
     # Shared params ------------------------------------------------------------
     index_name="new-index",
     # Sparse retriever params --------------------------------------------------
