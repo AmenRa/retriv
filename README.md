@@ -38,8 +38,6 @@ It allows you to build a search engine in a __single line of code__.
 [retriv](https://github.com/AmenRa/retriv) is built upon [Numba](https://github.com/numba/numba) for high-speed [vector operations](https://en.wikipedia.org/wiki/Automatic_vectorization) and [automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization), [PyTorch](https://pytorch.org) and [Transformers](https://huggingface.co/docs/transformers/index) for easy access and usage of [Transformer-based Language Models](https://web.stanford.edu/~jurafsky/slp3/10.pdf), and [Faiss](https://github.com/facebookresearch/faiss) for approximate [nearest neighbor search](https://en.wikipedia.org/wiki/Nearest_neighbor_search).
 In addition, it provides automatic tuning functionalities to allow you to tune its internal components with minimal intervention.
 
-[How fast is your retriv?](#speed-comparison)
-
 
 ## ✨ Main Features
 
