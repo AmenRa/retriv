@@ -96,7 +96,8 @@ collection = [
   {"id": "doc_4", "text": "Sorcerer of death's construction"},
 ]
 
-se = SearchEngine("new-index").index(collection)
+se = SearchEngine("new-index")
+se.index(collection)
 
 se.search("witches masses")
 ```
