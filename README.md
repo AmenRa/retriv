@@ -25,7 +25,7 @@
 
 ## 🔥 News
 - [February 18, 2023] `retriv` 0.2.0 is out!  
-This adds support for Dense and Hybrid Retrieval.
+This release adds support for Dense and Hybrid Retrieval.
 Dense Retrieval leverages the semantic similarity of the queries' and documents' vector representations, which can be computed directly by `retriv` or imported from other sources.
 Hybrid Retrieval mix traditional retrieval, informally called Sparse Retrieval,  and Dense Retrieval results to further improve retrieval effectiveness.
 As the library was almost completely redone, indices built with previous versions are no longer supported.
