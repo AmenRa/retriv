@@ -1,6 +1,6 @@
 # Sparse Retriever
 
-The Hybrid Retriever is searcher based on both lexical and semantic matching.
+The [Hybrid Retriever](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md) is searcher based on both lexical and semantic matching.
 It comprises three components: the [Sparse Retriever]((https://github.com/AmenRa/retriv/blob/main/docs/sparse_retriever.md)), the [Dense Retriever]((https://github.com/AmenRa/retriv/blob/main/docs/dense_retriever.md)), and the Merger.
 The Merger fuses the results of the Sparse and Dense Retrievers to compute the _hybrid_ results.
 
@@ -39,20 +39,20 @@ hr = HybridRetriever(
 - Shared params:
   - `index_name`: [retriv](https://github.com/AmenRa/retriv) will use `index_name` as the identifier of your index.
 - Sparse Retriever params:
-  - `sr_model`: defines the retrieval model to use for sparse retrieval (`bm25` or `tf-idf`).
+  - `sr_model`: defines the model to use for sparse retrieval (`bm25` or `tf-idf`).
   - `min_df`: terms that appear in less than `min_df` documents will be ignored.
   If integer, the parameter indicates the absolute count.
   If float, it represents a proportion of documents.
   - `tokenizer`: [tokenizer](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to use during preprocessing. You can pass a custom callable tokenizer or disable tokenization setting the parameter to `None`.
   - `stemmer`: [stemmer](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to use during preprocessing. You can pass a custom callable stemmer or disable stemming setting the parameter to `None`.
   - `stopwords`: [stopwords](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to remove during preprocessing. You can pass a custom stop-word list or disable stop-words removal by setting the parameter to `None`.
-  - `do_lowercasing`: whether to lower case texts.
+  - `do_lowercasing`: whether to lowercase texts.
   - `do_ampersand_normalization`: whether to convert `&` in `and` during pre-processing.
   - `do_special_chars_normalization`: whether to remove special characters for letters, e.g., `übermensch` → `ubermensch`.
   - `do_acronyms_normalization`: whether to remove full stop symbols from acronyms without splitting them in multiple words, e.g., `P.C.I.` → `PCI`.
   - `do_punctuation_removal`: whether to remove punctuation.
 - Dense Retriever params:
-  - `dr_model`: defines the encoder model to encode queries and documents into vectors. You can use an [HuggingFace's Transformers](https://huggingface.co/models) pre-trained model by providing its ID or load a local model by providing its path.
+  - `dr_model`: defines the model to use for encoding queries and documents into vectors. You can use an [HuggingFace's Transformers](https://huggingface.co/models) pre-trained model by providing its ID or load a local model by providing its path.
   In the case of local models, the path must point to the directory containing the data saved with the [`PreTrainedModel.save_pretrained`](https://huggingface.co/docs/transformers/v4.26.1/en/main_classes/model#transformers.PreTrainedModel.save_pretrained) method.
   Note that the representations are computed with `mean pooling` over the `last_hidden_state`.
   - `normalize`: whether to L2 normalize the vector representations.
