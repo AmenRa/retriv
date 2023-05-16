@@ -49,9 +49,7 @@ def join_sorted_multi_recursive(arrays):
     elif len(arrays) == 2:
         return join_sorted(arrays[0], arrays[1])
     else:
-        return join_sorted(
-            join_sorted_multi(arrays[:2]), join_sorted_multi(arrays[2:])
-        )
+        return join_sorted(join_sorted_multi(arrays[:2]), join_sorted_multi(arrays[2:]))
 
 
 @njit(cache=True)

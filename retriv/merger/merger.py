@@ -68,7 +68,7 @@ class Merger:
         state = np.load(merger_state_path(index_name), allow_pickle=True)[
             "state"
         ][()]
-        merger = Merger(state["init_args"])
+        merger = Merger(**state["init_args"])
         merger.norm = state["norm"]
         merger.params = state["params"]
         return merger

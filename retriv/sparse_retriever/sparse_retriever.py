@@ -39,6 +39,37 @@ class SparseRetriever(BaseRetriever):
         do_punctuation_removal: bool = True,
         hyperparams: dict = None,
     ):
+        """The Sparse Retriever is a traditional searcher based on lexical matching. It supports BM25, the retrieval model used by major search engines libraries, such as Lucene and Elasticsearch. retriv also implements the classic relevance model TF-IDF for educational purposes.
+
+        Args:
+            index_name (str, optional): [retriv](https://github.com/AmenRa/retriv) will use `index_name` as the identifier of your index. Defaults to "new-index".
+
+            model (str, optional): defines the retrieval model to use for searching (`bm25` or `tf-idf`). Defaults to "bm25".
+
+            min_df (int, optional): terms that appear in less than `min_df` documents will be ignored. If integer, the parameter indicates the absolute count. If float, it represents a proportion of documents. Defaults to 1.
+
+            tokenizer (Union[str, callable], optional): [tokenizer](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to use during preprocessing. You can pass a custom callable tokenizer or disable tokenization by setting the parameter to `None`. Defaults to "whitespace".
+
+            stemmer (Union[str, callable], optional): [stemmer](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to use during preprocessing. You can pass a custom callable stemmer or disable stemming setting the parameter to `None`. Defaults to "english".
+
+            stopwords (Union[str, List[str], Set[str]], optional): [stopwords](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md) to remove during preprocessing. You can pass a custom stop-word list or disable stop-words removal by setting the parameter to `None`. Defaults to "english".
+
+            do_lowercasing (bool, optional): whether or not to lowercase texts. Defaults to True.
+
+            do_ampersand_normalization (bool, optional): whether to convert `&` in `and` during pre-processing. Defaults to True.
+
+            do_special_chars_normalization (bool, optional): whether to remove special characters for letters, e.g., `übermensch` → `ubermensch`. Defaults to True.
+
+            do_acronyms_normalization (bool, optional): whether to remove full stop symbols from acronyms without splitting them in multiple words, e.g., `P.C.I.` → `PCI`. Defaults to True.
+
+            do_punctuation_removal (bool, optional): whether to remove punctuation. Defaults to True.
+
+            hyperparams (dict, optional): Retrieval model hyperparams. If `None`, it is automatically set to `{b: 0.75, k1: 1.2}`. Defaults to None.
+
+        Returns:
+            SparseRetriever: Sparse Retriever.
+        """
+
         assert model.lower() in {"bm25", "tf-idf"}
         assert min_df > 0, "`min_df` must be greater than zero."
         self.init_args = {
@@ -89,11 +120,11 @@ class SparseRetriever(BaseRetriever):
             "do_punctuation_removal": self.do_punctuation_removal,
         }
 
-        self.hyperparams = (
-            dict(b=0.75, k1=1.2) if hyperparams is None else hyperparams
-        )
+        self.hyperparams = dict(b=0.75, k1=1.2) if hyperparams is None else hyperparams
 
-    def save(self):
+    def save(self) -> None:
+        """Save the state of the retriever to be able to restore it later."""
+
         state = {
             "init_args": self.init_args,
             "id_mapping": self.id_mapping,
@@ -109,9 +140,16 @@ class SparseRetriever(BaseRetriever):
 
     @staticmethod
     def load(index_name: str = "new-index"):
-        state = np.load(sr_state_path(index_name), allow_pickle=True)["state"][
-            ()
-        ]
+        """Load a retriever and its index.
+
+        Args:
+            index_name (str, optional): Name of the index. Defaults to "new-index".
+
+        Returns:
+            SparseRetriever: Sparse Retriever.
+        """
+
+        state = np.load(sr_state_path(index_name), allow_pickle=True)["state"][()]
 
         se = SparseRetriever(**state["init_args"])
         se.initialize_doc_index()
@@ -137,6 +175,7 @@ class SparseRetriever(BaseRetriever):
         return se
 
     def index_aux(self, show_progress: bool = True):
+        """Internal usage."""
         collection = read_jsonl(
             docs_path(self.index_name),
             generator=True,
@@ -170,6 +209,18 @@ class SparseRetriever(BaseRetriever):
         callback: callable = None,
         show_progress: bool = True,
     ):
+        """Index a given collection od documents.
+
+        Args:
+            collection (Iterable): collection of documents to index.
+
+            callback (callable, optional): callback to apply before indexing the documents to modify them on the fly if needed. Defaults to None.
+
+            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+
+        Returns:
+            SparseRetriever: Sparse Retriever.
+        """
         self.save_collection(collection, callback, show_progress)
         self.initialize_doc_index()
         self.initialize_id_mapping()
@@ -180,23 +231,51 @@ class SparseRetriever(BaseRetriever):
 
     def index_file(
         self, path: str, callback: callable = None, show_progress: bool = True
-    ) -> None:
+    ):
+        """Index the collection contained in a given file.
+
+        Args:
+            path (str): path of file containing the collection to index.
+
+            callback (callable, optional): callback to apply before indexing the documents to modify them on the fly if needed. Defaults to None.
+
+            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+
+        Returns:
+            _type_: _description_
+        """
         collection = self.collection_generator(path=path, callback=callback)
         return self.index(collection=collection, show_progress=show_progress)
 
     # SEARCH ===================================================================
     def query_preprocessing(self, query: str) -> List[str]:
+        """Internal usage."""
         return preprocessing(query, **self.preprocessing_args)
 
     def get_term_doc_freqs(self, query_terms: List[str]) -> nb.types.List:
+        """Internal usage."""
         return TypedList([self.inverted_index[t]["tfs"] for t in query_terms])
 
     def get_doc_ids(self, query_terms: List[str]) -> nb.types.List:
-        return TypedList(
-            [self.inverted_index[t]["doc_ids"] for t in query_terms]
-        )
+        """Internal usage."""
+        return TypedList([self.inverted_index[t]["doc_ids"] for t in query_terms])
 
-    def search(self, query: str, return_docs: bool = True, cutoff: int = 100):
+    def search(self, query: str, return_docs: bool = True, cutoff: int = 100) -> List:
+        """Standard search functionality.
+
+        Args:
+            query (str): what to search for.
+
+            return_docs (bool, optional): wether to return the texts of the documents. Defaults to True.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            List: results.
+        """
         query_terms = self.query_preprocessing(query)
         if not query_terms:
             return {}
@@ -233,7 +312,17 @@ class SparseRetriever(BaseRetriever):
 
         return self.prepare_results(unique_doc_ids, scores)
 
-    def msearch(self, queries: List[Dict[str, str]], cutoff: int = 100):
+    def msearch(self, queries: List[Dict[str, str]], cutoff: int = 100) -> Dict:
+        """Compute results for multiple queries at once.
+
+        Args:
+            queries (List[Dict[str, str]]): what to search for.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+        Returns:
+            Dict: results.
+        """
         term_doc_freqs = TypedList()
         doc_ids = TypedList()
         q_ids = []
@@ -283,8 +372,7 @@ class SparseRetriever(BaseRetriever):
         ]
 
         results = {
-            q: dict(zip(unique_doc_ids[i], scores[i]))
-            for i, q in enumerate(q_ids)
+            q: dict(zip(unique_doc_ids[i], scores[i])) for i, q in enumerate(q_ids)
         }
 
         for q_id in no_results_q_ids:
@@ -302,9 +390,26 @@ class SparseRetriever(BaseRetriever):
         qrels: Dict[str, Dict[str, float]] = None,
         path: str = None,
     ):
+        """Batch-Search is similar to Multi-Search but automatically generates batches of queries to evaluate and allows dynamic writing of the search results to disk in [JSONl](https://jsonlines.org) format. bsearch is handy for computing results for hundreds of thousands or even millions of queries without hogging your RAM.
+
+        Args:
+            queries (List[Dict[str, str]]): what to search for.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+            batch_size (int, optional): number of query to perform simultaneously. Defaults to 1_000.
+
+            show_progress (bool, optional): whether to show a progress bar for the search process. Defaults to True.
+
+            qrels (Dict[str, Dict[str, float]], optional): query relevance judgements for the queries. Defaults to None.
+
+            path (str, optional): where to save the results. Defaults to None.
+
+        Returns:
+            Dict: results.
+        """
         batches = [
-            queries[i : i + batch_size]
-            for i in range(0, len(queries), batch_size)
+            queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
         ]
 
         results = {}
@@ -356,6 +461,22 @@ class SparseRetriever(BaseRetriever):
         n_trials: int = 100,
         cutoff: int = 100,
     ):
+        """Use the AutoTune function to tune [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) parameters w.r.t. your document collection and queries.
+        All metrics supported by [ranx](https://github.com/AmenRa/ranx) are supported by the `autotune` function.
+        At the of the process, the best parameter configuration is automatically applied to the `SparseRetriever` instance and saved to disk.
+        You can inspect the current configuration by printing `sr.hyperparams`.
+
+        Args:
+            queries (List[Dict[str, str]]): queries to use for the optimization process.
+
+            qrels (Dict[str, Dict[str, float]]): query relevance judgements for the queries.
+
+            metric (str, optional): metric to optimize for. Defaults to "ndcg".
+
+            n_trials (int, optional): number of configuration to evaluate. Defaults to 100.
+
+            cutoff (int, optional): number of results to consider for the optimization process. Defaults to 100.
+        """
         hyperparams = tune_bm25(
             queries=queries,
             qrels=qrels,

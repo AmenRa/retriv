@@ -70,9 +70,7 @@ class HybridRetriever(BaseRetriever):
             )
         )
 
-        self.merger = (
-            merger if merger is not None else Merger(index_name=index_name)
-        )
+        self.merger = merger if merger is not None else Merger(index_name=index_name)
 
     def index(
         self,
@@ -139,9 +137,7 @@ class HybridRetriever(BaseRetriever):
 
     @staticmethod
     def load(index_name: str = "new-index"):
-        state = np.load(hr_state_path(index_name), allow_pickle=True)["state"][
-            ()
-        ]
+        state = np.load(hr_state_path(index_name), allow_pickle=True)["state"][()]
 
         hr = HybridRetriever(index_name)
         hr.initialize_doc_index()
@@ -191,8 +187,7 @@ class HybridRetriever(BaseRetriever):
         path: str = None,
     ):
         batches = [
-            queries[i : i + batch_size]
-            for i in range(0, len(queries), batch_size)
+            queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
         ]
 
         results = {}
@@ -225,9 +220,7 @@ class HybridRetriever(BaseRetriever):
                             "id": k,
                             "text": batch[i]["text"],
                             "hybrid_doc_ids": list(v.keys()),
-                            "hybrid_scores": [
-                                float(s) for s in list(v.values())
-                            ],
+                            "hybrid_scores": [float(s) for s in list(v.values())],
                         }
                         if qrels is not None:
                             x["rel_doc_ids"] = list(qrels[k].keys())
