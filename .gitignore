@@ -9,6 +9,7 @@
 *.csv
 *.tsv
 *.jsonl
+/compute_runs.py
 
 raw_collection.jsonl
 .DS_Store
