@@ -461,9 +461,7 @@ class SparseRetriever(BaseRetriever):
         cutoff: int = 100,
     ):
         """Use the AutoTune function to tune [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) parameters w.r.t. your document collection and queries.
-        All metrics supported by [ranx](https://github.com/AmenRa/ranx) are supported by the `autotune` function.
-        At the of the process, the best parameter configuration is automatically applied to the `SparseRetriever` instance and saved to disk.
-        You can inspect the current configuration by printing `sr.hyperparams`.
+        All metrics supported by [ranx](https://github.com/AmenRa/ranx) are supported by the `autotune` function. At the of the process, the best parameter configuration is automatically applied to the `SparseRetriever` instance and saved to disk. You can inspect the current configuration by printing `sr.hyperparams`.
 
         Args:
             queries (List[Dict[str, str]]): queries to use for the optimization process.

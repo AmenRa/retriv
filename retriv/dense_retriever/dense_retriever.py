@@ -207,7 +207,7 @@ class DenseRetriever(BaseRetriever):
             show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
 
         Returns:
-            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+            DenseRetriever: Dense Retriever.
         """
 
         collection = self.collection_generator(path, callback)
