@@ -10,6 +10,7 @@
 *.tsv
 *.jsonl
 /compute_runs.py
+.vscode
 
 raw_collection.jsonl
 .DS_Store
