@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="retriv",
-    version="0.2.0",
+    version="0.2.1",
     author="Elias Bassani",
     author_email="elias.bssn@gmail.com",
     description="retriv: A Blazing-Fast Python Search Engine.",
