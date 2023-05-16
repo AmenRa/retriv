@@ -65,9 +65,6 @@ class SparseRetriever(BaseRetriever):
             do_punctuation_removal (bool, optional): whether to remove punctuation. Defaults to True.
 
             hyperparams (dict, optional): Retrieval model hyperparams. If `None`, it is automatically set to `{b: 0.75, k1: 1.2}`. Defaults to None.
-
-        Returns:
-            SparseRetriever: Sparse Retriever.
         """
 
         assert model.lower() in {"bm25", "tf-idf"}
@@ -209,7 +206,7 @@ class SparseRetriever(BaseRetriever):
         callback: callable = None,
         show_progress: bool = True,
     ):
-        """Index a given collection od documents.
+        """Index a given collection of documents.
 
         Args:
             collection (Iterable): collection of documents to index.
@@ -221,6 +218,7 @@ class SparseRetriever(BaseRetriever):
         Returns:
             SparseRetriever: Sparse Retriever.
         """
+
         self.save_collection(collection, callback, show_progress)
         self.initialize_doc_index()
         self.initialize_id_mapping()
@@ -242,8 +240,9 @@ class SparseRetriever(BaseRetriever):
             show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
 
         Returns:
-            _type_: _description_
+            SparseRetriever: Sparse Retriever
         """
+
         collection = self.collection_generator(path=path, callback=callback)
         return self.index(collection=collection, show_progress=show_progress)
 
@@ -270,12 +269,10 @@ class SparseRetriever(BaseRetriever):
 
             cutoff (int, optional): number of results to return. Defaults to 100.
 
-        Raises:
-            NotImplementedError: _description_
-
         Returns:
             List: results.
         """
+
         query_terms = self.query_preprocessing(query)
         if not query_terms:
             return {}
@@ -323,6 +320,7 @@ class SparseRetriever(BaseRetriever):
         Returns:
             Dict: results.
         """
+
         term_doc_freqs = TypedList()
         doc_ids = TypedList()
         q_ids = []
@@ -389,7 +387,7 @@ class SparseRetriever(BaseRetriever):
         show_progress: bool = True,
         qrels: Dict[str, Dict[str, float]] = None,
         path: str = None,
-    ):
+    ) -> Dict:
         """Batch-Search is similar to Multi-Search but automatically generates batches of queries to evaluate and allows dynamic writing of the search results to disk in [JSONl](https://jsonlines.org) format. bsearch is handy for computing results for hundreds of thousands or even millions of queries without hogging your RAM.
 
         Args:
@@ -408,6 +406,7 @@ class SparseRetriever(BaseRetriever):
         Returns:
             Dict: results.
         """
+
         batches = [
             queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
         ]
@@ -477,6 +476,7 @@ class SparseRetriever(BaseRetriever):
 
             cutoff (int, optional): number of results to consider for the optimization process. Defaults to 100.
         """
+
         hyperparams = tune_bm25(
             queries=queries,
             qrels=qrels,

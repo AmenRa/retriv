@@ -24,6 +24,20 @@ class DenseRetriever(BaseRetriever):
         max_length: int = 128,
         use_ann: bool = True,
     ):
+        """The Dense Retriever performs [semantic search](https://en.wikipedia.org/wiki/Semantic_search), i.e., it compares vector representations of queries and documents to compute the relevance scores of the latter.
+
+        Args:
+            index_name (str, optional): [retriv](https://github.com/AmenRa/retriv) will use `index_name` as the identifier of your index. Defaults to "new-index".
+
+            model (str, optional): defines the encoder model to encode queries and documents into vectors. You can use an [HuggingFace's Transformers](https://huggingface.co/models) pre-trained model by providing its ID or load a local model by providing its path.  In the case of local models, the path must point to the directory containing the data saved with the [`PreTrainedModel.save_pretrained`](https://huggingface.co/docs/transformers/v4.26.1/en/main_classes/model#transformers.PreTrainedModel.save_pretrained) method. Note that the representations are computed with `mean pooling` over the `last_hidden_state`. Defaults to "sentence-transformers/all-MiniLM-L6-v2".
+
+            normalize (bool, optional): whether to L2 normalize the vector representations. Defaults to True.
+
+            max_length (int, optional): texts longer than `max_length` will be automatically truncated. Choose this parameter based on how the employed model was trained or is generally used. Defaults to 128.
+
+            use_ann (bool, optional): whether to use approximate nearest neighbors search. Set it to `False` to use nearest neighbors search without approximation. If you have less than 20k documents in your collection, you probably want to disable approximation. Defaults to True.
+        """
+
         self.index_name = index_name
         self.model = model
         self.normalize = normalize
@@ -46,6 +60,8 @@ class DenseRetriever(BaseRetriever):
         self.embeddings = None
 
     def save(self):
+        """Save the state of the retriever to be able to restore it later."""
+
         state = dict(
             init_args=dict(
                 index_name=self.index_name,
@@ -62,9 +78,16 @@ class DenseRetriever(BaseRetriever):
 
     @staticmethod
     def load(index_name: str = "new-index"):
-        state = np.load(dr_state_path(index_name), allow_pickle=True)["state"][
-            ()
-        ]
+        """Load a retriever and its index.
+
+        Args:
+            index_name (str, optional): Name of the index. Defaults to "new-index".
+
+        Returns:
+            DenseRetriever: Dense Retriever.
+        """
+
+        state = np.load(dr_state_path(index_name), allow_pickle=True)["state"][()]
         dr = DenseRetriever(**state["init_args"])
         dr.initialize_doc_index()
         dr.id_mapping = state["id_mapping"]
@@ -76,6 +99,7 @@ class DenseRetriever(BaseRetriever):
         return dr
 
     def load_embeddings(self):
+        """Internal usage."""
         path = embeddings_folder_path(self.index_name)
         npy_file_paths = sorted(os.listdir(path))
         self.embeddings = np.concatenate(
@@ -83,9 +107,8 @@ class DenseRetriever(BaseRetriever):
         )
 
     def import_embeddings(self, path: str):
-        shutil.copyfile(
-            path, embeddings_folder_path(self.index_name) / "chunk_0.npy"
-        )
+        """Internal usage."""
+        shutil.copyfile(path, embeddings_folder_path(self.index_name) / "chunk_0.npy")
 
     def index_aux(
         self,
@@ -95,6 +118,7 @@ class DenseRetriever(BaseRetriever):
         callback: callable = None,
         show_progress: bool = True,
     ):
+        """Internal usage."""
         if embeddings_path is not None:
             self.import_embeddings(embeddings_path)
         else:
@@ -125,6 +149,25 @@ class DenseRetriever(BaseRetriever):
         callback: callable = None,
         show_progress: bool = True,
     ):
+        """Index a given collection of documents.
+
+        Args:
+            collection (Iterable): collection of documents to index.
+
+            embeddings_path (str, optional): in case you want to load pre-computed embeddings, you can provide the path to a `.npy` file. Embeddings must be in the same order as the documents in the collection file. Defaults to None.
+
+            use_gpu (bool, optional): whether to use the GPU for document encoding. Defaults to False.
+
+            batch_size (int, optional): how many documents to encode at once. Regulate it if you ran into memory usage issues or want to maximize throughput. Defaults to 512.
+
+            callback (callable, optional): callback to apply before indexing the documents to modify them on the fly if needed. Defaults to None.
+
+            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+
+        Returns:
+            DenseRetriever: Dense Retriever
+        """
+
         self.save_collection(collection, callback, show_progress)
         self.initialize_doc_index()
         self.initialize_id_mapping()
@@ -147,7 +190,26 @@ class DenseRetriever(BaseRetriever):
         batch_size: int = 512,
         callback: callable = None,
         show_progress: bool = True,
-    ) -> None:
+    ):
+        """Index the collection contained in a given file.
+
+        Args:
+            path (str): path of file containing the collection to index.
+
+            embeddings_path (str, optional): in case you want to load pre-computed embeddings, you can provide the path to a `.npy` file. Embeddings must be in the same order as the documents in the collection file. Defaults to None.
+
+            use_gpu (bool, optional): whether to use the GPU for document encoding. Defaults to False.
+
+            batch_size (int, optional): how many documents to encode at once. Regulate it if you ran into memory usage issues or want to maximize throughput. Defaults to 512.
+
+            callback (callable, optional): callback to apply before indexing the documents to modify them on the fly if needed. Defaults to None.
+
+            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+
+        Returns:
+            show_progress (bool, optional): whether to show a progress bar for the indexing process. Defaults to True.
+        """
+
         collection = self.collection_generator(path, callback)
         return self.index(
             collection,
@@ -163,7 +225,20 @@ class DenseRetriever(BaseRetriever):
         query: str,
         return_docs: bool = True,
         cutoff: int = 100,
-    ):
+    ) -> List:
+        """Standard search functionality.
+
+        Args:
+            query (str): what to search for.
+
+            return_docs (bool, optional): wether to return the texts of the documents. Defaults to True.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+        Returns:
+            List: results.
+        """
+
         encoded_query = self.encoder(query)
 
         if self.use_ann:
@@ -171,9 +246,7 @@ class DenseRetriever(BaseRetriever):
         else:
             if self.embeddings is None:
                 self.load_embeddings()
-            doc_ids, scores = compute_scores(
-                encoded_query, self.embeddings, cutoff
-            )
+            doc_ids, scores = compute_scores(encoded_query, self.embeddings, cutoff)
 
         doc_ids = self.map_internal_ids_to_original_ids(doc_ids)
 
@@ -188,7 +261,20 @@ class DenseRetriever(BaseRetriever):
         queries: List[Dict[str, str]],
         cutoff: int = 100,
         batch_size: int = 32,
-    ):
+    ) -> Dict:
+        """Compute results for multiple queries at once.
+
+        Args:
+            queries (List[Dict[str, str]]): what to search for.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+            batch_size (int, optional): how many queries to search at once. Regulate it if you ran into memory usage issues or want to maximize throughput. Defaults to 32.
+
+        Returns:
+            Dict: results.
+        """
+
         q_ids = [x["id"] for x in queries]
         q_texts = [x["text"] for x in queries]
         encoded_queries = self.encoder(q_texts, batch_size, show_progress=False)
@@ -203,13 +289,10 @@ class DenseRetriever(BaseRetriever):
             )
 
         doc_ids = [
-            self.map_internal_ids_to_original_ids(_doc_ids)
-            for _doc_ids in doc_ids
+            self.map_internal_ids_to_original_ids(_doc_ids) for _doc_ids in doc_ids
         ]
 
-        results = {
-            q: dict(zip(doc_ids[i], scores[i])) for i, q in enumerate(q_ids)
-        }
+        results = {q: dict(zip(doc_ids[i], scores[i])) for i, q in enumerate(q_ids)}
 
         return {q_id: results[q_id] for q_id in q_ids}
 
@@ -222,9 +305,27 @@ class DenseRetriever(BaseRetriever):
         qrels: Dict[str, Dict[str, float]] = None,
         path: str = None,
     ):
+        """Batch-Search is similar to Multi-Search but automatically generates batches of queries to evaluate and allows dynamic writing of the search results to disk in [JSONl](https://jsonlines.org) format. bsearch is handy for computing results for hundreds of thousands or even millions of queries without hogging your RAM.
+
+        Args:
+            queries (List[Dict[str, str]]): what to search for.
+
+            cutoff (int, optional): number of results to return. Defaults to 100.
+
+            batch_size (int, optional): how many queries to search at once. Regulate it if you ran into memory usage issues or want to maximize throughput. Defaults to 32.
+
+            show_progress (bool, optional): whether to show a progress bar for the search process. Defaults to True.
+
+            qrels (Dict[str, Dict[str, float]], optional): query relevance judgements for the queries. Defaults to None.
+
+            path (str, optional): where to save the results. Defaults to None.
+
+        Returns:
+            Dict: results.
+        """
+
         batches = [
-            queries[i : i + batch_size]
-            for i in range(0, len(queries), batch_size)
+            queries[i : i + batch_size] for i in range(0, len(queries), batch_size)
         ]
 
         results = {}
@@ -257,9 +358,7 @@ class DenseRetriever(BaseRetriever):
                             "id": k,
                             "text": batch[i]["text"],
                             "dense_doc_ids": list(v.keys()),
-                            "dense_scores": [
-                                float(s) for s in list(v.values())
-                            ],
+                            "dense_scores": [float(s) for s in list(v.values())],
                         }
                         if qrels is not None:
                             x["rel_doc_ids"] = list(qrels[k].keys())
@@ -273,6 +372,8 @@ class DenseRetriever(BaseRetriever):
 
 @njit(cache=True)
 def compute_scores(query: np.ndarray, docs: np.ndarray, cutoff: int):
+    """Internal usage."""
+
     scores = docs @ query
     indices = np.argsort(-scores)[:cutoff]
 
@@ -281,6 +382,8 @@ def compute_scores(query: np.ndarray, docs: np.ndarray, cutoff: int):
 
 @njit(cache=True, parallel=True)
 def compute_scores_multi(queries: np.ndarray, docs: np.ndarray, cutoff: int):
+    """Internal usage."""
+
     n = len(queries)
     ids = TypedList([np.empty(1, dtype=np.int64) for _ in range(n)])
     scores = TypedList([np.empty(1, dtype=np.float32) for _ in range(n)])
