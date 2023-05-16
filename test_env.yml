@@ -1,0 +1,20 @@
+name: asd
+dependencies:
+  - python=3.8
+  - black
+  - conda-forge::icecream
+  - isort
+  - ipykernel
+  - ipywidgets
+  - conda-forge::mkdocs-material
+  - conda-forge::mkdocs-autorefs
+  - conda-forge::mkdocstrings 
+  - conda-forge::mkdocstrings-python 
+  - pygments>=2.12
+  - notebook
+  - pytest
+  # Pip
+  - pip
+  - pip:
+    - retriv
+
