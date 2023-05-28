@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Bassani"
+  given-names: "Elias"
+  orcid: "https://orcid.org/0000-0001-7922-2578"
+title: "retriv: A Python Search Engine for the Common Man"
+version: 0.2.1
+doi: 10.5281/zenodo.7978820
+date-released: 2012-05-28
+url: "https://github.com/AmenRa/retriv"
