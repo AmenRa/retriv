@@ -16,8 +16,8 @@ from .preprocessing import (
     get_stemmer,
     get_stopwords,
     get_tokenizer,
-    multi_preprocessing,
     preprocessing,
+    preprocessing_multi,
 )
 from .sparse_retrieval_models.bm25 import bm25, bm25_multi
 from .sparse_retrieval_models.tf_idf import tf_idf, tf_idf_multi
@@ -106,7 +106,7 @@ class SparseRetriever(BaseRetriever):
         self.relative_doc_lens = None
         self.doc_index = None
 
-        self.preprocessing_args = {
+        self.preprocessing_kwargs = {
             "tokenizer": self.tokenizer,
             "stemmer": self.stemmer,
             "stopwords": self.stopwords,
@@ -116,6 +116,8 @@ class SparseRetriever(BaseRetriever):
             "do_acronyms_normalization": self.do_acronyms_normalization,
             "do_punctuation_removal": self.do_punctuation_removal,
         }
+
+        self.preprocessing_pipe = preprocessing_multi(**self.preprocessing_kwargs)
 
         self.hyperparams = dict(b=0.75, k1=1.2) if hyperparams is None else hyperparams
 
@@ -180,11 +182,7 @@ class SparseRetriever(BaseRetriever):
         )
 
         # Preprocessing --------------------------------------------------------
-        collection = multi_preprocessing(
-            collection=collection,
-            **self.preprocessing_args,
-            n_threads=os.cpu_count(),
-        )  # This is a generator
+        collection = self.preprocessing_pipe(collection, generator=True)
 
         # Inverted index -------------------------------------------------------
         (
@@ -249,7 +247,7 @@ class SparseRetriever(BaseRetriever):
     # SEARCH ===================================================================
     def query_preprocessing(self, query: str) -> List[str]:
         """Internal usage."""
-        return preprocessing(query, **self.preprocessing_args)
+        return preprocessing(query, **self.preprocessing_kwargs)
 
     def get_term_doc_freqs(self, query_terms: List[str]) -> nb.types.List:
         """Internal usage."""
@@ -265,7 +263,7 @@ class SparseRetriever(BaseRetriever):
         Args:
             query (str): what to search for.
 
-            return_docs (bool, optional): whether to return the texts of the documents. Defaults to True.
+            return_docs (bool, optional): wether to return the texts of the documents. Defaults to True.
 
             cutoff (int, optional): number of results to return. Defaults to 100.
 

@@ -1,6 +1,6 @@
 import pytest
 
-from retriv.sparse_retriever.preprocessing import multi_preprocessing, preprocessing
+from retriv.sparse_retriever.preprocessing import preprocessing, preprocessing_multi
 from retriv.sparse_retriever.preprocessing.stemmer import get_stemmer
 from retriv.sparse_retriever.preprocessing.stopwords import get_stopwords
 from retriv.sparse_retriever.preprocessing.tokenizer import get_tokenizer
@@ -33,7 +33,7 @@ def docs():
 
 
 # TESTS ========================================================================
-def test_multi_preprocessing(docs, stemmer, stopwords, tokenizer):
+def test_preprocessing_multi(docs, stemmer, stopwords, tokenizer):
     out = [
         preprocessing(
             doc,
@@ -48,20 +48,19 @@ def test_multi_preprocessing(docs, stemmer, stopwords, tokenizer):
         )
         for doc in docs
     ]
-    multi_out = list(
-        multi_preprocessing(
-            docs,
-            stemmer=stemmer,
-            stopwords=stopwords,
-            tokenizer=tokenizer,
-            n_threads=4,
-            do_lowercasing=True,
-            do_ampersand_normalization=True,
-            do_special_chars_normalization=True,
-            do_acronyms_normalization=True,
-            do_punctuation_removal=True,
-        )
+
+    pipeline = preprocessing_multi(
+        tokenizer=tokenizer,
+        stopwords=stopwords,
+        stemmer=stemmer,
+        do_lowercasing=True,
+        do_ampersand_normalization=True,
+        do_special_chars_normalization=True,
+        do_acronyms_normalization=True,
+        do_punctuation_removal=True,
     )
+    multi_out = pipeline(docs)
+
     assert len(out) == len(multi_out)
     assert out[0] == multi_out[0]
     assert out[1] == multi_out[1]

@@ -11,8 +11,9 @@ __all__ = [
 ]
 
 
-from multiprocessing import Pool
-from typing import Callable, Generator, Iterable, List, Set
+from typing import Callable, List, Set
+
+from multipipe import Multipipe
 
 from .normalization import (
     lowercasing,
@@ -62,12 +63,7 @@ def preprocessing(
     return [stemmer(t) for t in x]
 
 
-def _preprocessing(x):
-    return preprocessing(*x)
-
-
-def prepare_inputs(
-    collection: Iterable,
+def preprocessing_multi(
     tokenizer: callable,
     stopwords: List[str],
     stemmer: callable,
@@ -76,44 +72,39 @@ def prepare_inputs(
     do_special_chars_normalization: bool,
     do_acronyms_normalization: bool,
     do_punctuation_removal: bool,
-) -> Generator:
-    for doc in collection:
-        yield (
-            doc,
-            tokenizer,
-            stopwords,
-            stemmer,
-            do_lowercasing,
-            do_ampersand_normalization,
-            do_special_chars_normalization,
-            do_acronyms_normalization,
-            do_punctuation_removal,
-        )
+):
+    callables = []
 
+    if do_lowercasing:
+        callables.append(lowercasing)
+    if do_ampersand_normalization:
+        callables.append(normalize_ampersand)
+    if do_special_chars_normalization:
+        callables.append(normalize_special_chars)
+    if do_acronyms_normalization:
+        callables.append(normalize_acronyms)
+    if tokenizer == str.split and do_punctuation_removal:
+        callables.append(remove_punctuation)
+        callables.append(strip_whitespaces)
 
-def multi_preprocessing(
-    collection: Iterable,
-    tokenizer: callable,
-    stopwords: List[str],
-    stemmer: callable,
-    do_lowercasing: bool,
-    do_ampersand_normalization: bool,
-    do_special_chars_normalization: bool,
-    do_acronyms_normalization: bool,
-    do_punctuation_removal: bool,
-    n_threads: int,
-) -> Generator:
-    inputs = prepare_inputs(
-        collection,
-        tokenizer=tokenizer,
-        stopwords=stopwords,
-        stemmer=stemmer,
-        do_lowercasing=do_lowercasing,
-        do_ampersand_normalization=do_ampersand_normalization,
-        do_special_chars_normalization=do_special_chars_normalization,
-        do_acronyms_normalization=do_acronyms_normalization,
-        do_punctuation_removal=do_punctuation_removal,
-    )
+    callables.append(tokenizer)
 
-    with Pool(n_threads) as p:
-        yield from p.imap(_preprocessing, inputs, chunksize=1_000)
+    if tokenizer != str.split and do_punctuation_removal:
+
+        def rp(x):
+            x = [remove_punctuation(t) for t in x]
+            return [t for t in x if t]
+
+        callables.append(rp)
+
+    def sw(x):
+        return [t for t in x if t not in stopwords]
+
+    callables.append(sw)
+
+    def stem(x):
+        return [stemmer(t) for t in x]
+
+    callables.append(stem)
+
+    return Multipipe(callables)
