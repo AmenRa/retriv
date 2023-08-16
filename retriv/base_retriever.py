@@ -72,9 +72,7 @@ class BaseRetriever:
     def get_docs(self, doc_ids: List[str]) -> List[dict]:
         return self.doc_index.mget(doc_ids)
 
-    def prepare_results(
-        self, doc_ids: List[str], scores: np.ndarray
-    ) -> List[dict]:
+    def prepare_results(self, doc_ids: List[str], scores: np.ndarray) -> List[dict]:
         docs = self.get_docs(doc_ids)
         results = []
         for doc, score in zip(docs, scores):

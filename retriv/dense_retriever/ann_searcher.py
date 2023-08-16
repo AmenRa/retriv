@@ -6,11 +6,7 @@ import psutil
 from autofaiss import build_index
 from oneliner_utils import read_json
 
-from ..paths import (
-    embeddings_folder_path,
-    faiss_index_infos_path,
-    faiss_index_path,
-)
+from ..paths import embeddings_folder_path, faiss_index_infos_path, faiss_index_path
 
 
 def get_ram():
@@ -54,12 +50,8 @@ class ANN_Searcher:
     @staticmethod
     def load(index_name: str = "new-index"):
         ann_searcher = ANN_Searcher(index_name)
-        ann_searcher.faiss_index = faiss.read_index(
-            str(faiss_index_path(index_name))
-        )
-        ann_searcher.faiss_index_infos = read_json(
-            faiss_index_infos_path(index_name)
-        )
+        ann_searcher.faiss_index = faiss.read_index(str(faiss_index_path(index_name)))
+        ann_searcher.faiss_index_infos = read_json(faiss_index_infos_path(index_name))
         return ann_searcher
 
     def search(self, query: np.ndarray, cutoff: int = 100):

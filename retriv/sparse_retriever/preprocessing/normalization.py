@@ -28,9 +28,7 @@ def normalize_acronyms(x: str) -> str:
 
 
 def remove_punctuation(x: str) -> str:
-    translator = str.maketrans(
-        string.punctuation, " " * len(string.punctuation)
-    )
+    translator = str.maketrans(string.punctuation, " " * len(string.punctuation))
     return x.translate(translator)
 
 

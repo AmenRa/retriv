@@ -28,8 +28,7 @@ def min_max_norm(run: Dict[str, float]):
         denominator = max(max_score - min_score, 1e-9)
 
         normalized_results = {
-            doc_id: (results[doc_id] - min_score) / (denominator)
-            for doc_id in results
+            doc_id: (results[doc_id] - min_score) / (denominator) for doc_id in results
         }
 
         normalized_run[q_id] = normalized_results
@@ -67,8 +66,7 @@ def sum_norm(run: Dict[str, float]):
         denominator = max(denominator, 1e-9)
 
         normalized_results = {
-            doc_id: (results[doc_id] - min_score) / (denominator)
-            for doc_id in results
+            doc_id: (results[doc_id] - min_score) / (denominator) for doc_id in results
         }
 
         normalized_run[q_id] = normalized_results

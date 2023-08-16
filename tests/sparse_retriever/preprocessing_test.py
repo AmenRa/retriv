@@ -1,9 +1,6 @@
 import pytest
 
-from retriv.sparse_retriever.preprocessing import (
-    multi_preprocessing,
-    preprocessing,
-)
+from retriv.sparse_retriever.preprocessing import multi_preprocessing, preprocessing
 from retriv.sparse_retriever.preprocessing.stemmer import get_stemmer
 from retriv.sparse_retriever.preprocessing.stopwords import get_stopwords
 from retriv.sparse_retriever.preprocessing.tokenizer import get_tokenizer

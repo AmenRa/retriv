@@ -6,6 +6,7 @@ from retriv import SearchEngine
 
 REL_TOL = 1e-6
 
+
 # FIXTURES =====================================================================
 @pytest.fixture
 def collection():

@@ -44,9 +44,9 @@ def _get_stopwords(lang: str) -> List[str]:
 
 
 def get_stopwords(sw_list: Union[str, List[str], Set[str], bool]) -> List[str]:
-    if type(sw_list) is str:
+    if isinstance(sw_list, str):
         return _get_stopwords(sw_list)
-    elif type(sw_list) is list and all(type(x) is str for x in sw_list):
+    elif type(sw_list) is list and all(isinstance(x, str) for x in sw_list):
         return sw_list
     elif type(sw_list) is set:
         return list(sw_list)

@@ -1,4 +1,3 @@
-
 from ranx import Qrels, Run, evaluate, fuse, optimize_fusion
 
 
@@ -20,10 +19,7 @@ def tune_merger(qrels, runs, metric):
         )
 
         combined_run = fuse(
-            runs=ranx_runs,  
-            norm=norm,       
-            method="wsum",        
-            params=best_params
+            runs=ranx_runs, norm=norm, method="wsum", params=best_params
         )
 
         score = evaluate(ranx_qrels, combined_run, metric)
@@ -35,7 +31,3 @@ def tune_merger(qrels, runs, metric):
             }
 
     return best_config
-
-
-
-    

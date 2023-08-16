@@ -265,7 +265,7 @@ class SparseRetriever(BaseRetriever):
         Args:
             query (str): what to search for.
 
-            return_docs (bool, optional): wether to return the texts of the documents. Defaults to True.
+            return_docs (bool, optional): whether to return the texts of the documents. Defaults to True.
 
             cutoff (int, optional): number of results to return. Defaults to 100.
 

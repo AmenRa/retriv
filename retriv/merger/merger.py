@@ -31,11 +31,7 @@ class Merger:
         else:
             raise NotImplementedError
 
-        weights = (
-            [1.0 for _ in runs]
-            if self.params is None
-            else self.params["weights"]
-        )
+        weights = [1.0 for _ in runs] if self.params is None else self.params["weights"]
 
         fused_run = defaultdict(lambda: defaultdict(float))
         for i, run in enumerate(normalized_runs):
@@ -45,9 +41,7 @@ class Merger:
 
         # Sort results by descending value and ascending key
         for q_id, results in list(fused_run.items()):
-            fused_run[q_id] = dict(
-                sorted(results.items(), key=lambda x: (-x[1], x[0]))
-            )
+            fused_run[q_id] = dict(sorted(results.items(), key=lambda x: (-x[1], x[0])))
 
         # Apply cutoff
         for q_id, results in list(fused_run.items()):
@@ -65,9 +59,7 @@ class Merger:
 
     @staticmethod
     def load(index_name: str = "new-index"):
-        state = np.load(merger_state_path(index_name), allow_pickle=True)[
-            "state"
-        ][()]
+        state = np.load(merger_state_path(index_name), allow_pickle=True)["state"][()]
         merger = Merger(**state["init_args"])
         merger.norm = state["norm"]
         merger.params = state["params"]

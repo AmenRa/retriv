@@ -50,13 +50,9 @@ def test_fuse(merger, run_a, run_b):
     norm_run_a = min_max_norm(run_a)
     norm_run_b = min_max_norm(run_b)
 
-    assert isclose(
-        fused_results["d1"], norm_run_a["q1"]["d1"] + norm_run_b["q1"]["d1"]
-    )
+    assert isclose(fused_results["d1"], norm_run_a["q1"]["d1"] + norm_run_b["q1"]["d1"])
     assert isclose(fused_results["d2"], norm_run_a["q1"]["d2"])
-    assert isclose(
-        fused_results["d3"], norm_run_a["q1"]["d3"] + norm_run_b["q1"]["d3"]
-    )
+    assert isclose(fused_results["d3"], norm_run_a["q1"]["d3"] + norm_run_b["q1"]["d3"])
 
 
 def test_mfuse(merger, run_a, run_b):

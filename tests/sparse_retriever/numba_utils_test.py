@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from numba.typed import List as TypedList
 
 from retriv.utils.numba_utils import (
@@ -59,9 +58,7 @@ def test_concat1d():
     arrays = TypedList([a1, a2, a3, a4])
 
     result = concat1d(arrays)
-    expected = np.array(
-        [1, 3, 4, 7, 1, 4, 7, 9, 10, 11, 11, 12, 13], dtype=np.int32
-    )
+    expected = np.array([1, 3, 4, 7, 1, 4, 7, 9, 10, 11, 11, 12, 13], dtype=np.int32)
 
     assert np.array_equal(result, expected)
 

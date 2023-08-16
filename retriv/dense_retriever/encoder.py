@@ -96,12 +96,10 @@ class Encoder:
         batch_size: int = 32,
         show_progress: bool = True,
     ):
-        if type(x) == str:
+        if isinstance(x, str):
             return self.encode(x)
         else:
-            return self.bencode(
-                x, batch_size=batch_size, show_progress=show_progress
-            )
+            return self.bencode(x, batch_size=batch_size, show_progress=show_progress)
 
     def encode(self, text: str):
         return self.bencode([text], batch_size=1, show_progress=False)[0]
@@ -166,9 +164,7 @@ class Encoder:
 
         for texts in generate_batch(collection, batch_size):
             # Compute embeddings -----------------------------------------------
-            embeddings = self.bencode(
-                texts, batch_size=len(texts), show_progress=False
-            )
+            embeddings = self.bencode(texts, batch_size=len(texts), show_progress=False)
 
             # Compute new offset -----------------------------------------------
             new_offset = offset + len(embeddings)
@@ -179,9 +175,7 @@ class Encoder:
                     / f"chunk_{reservoir_n}.npy",
                     reservoir[:offset],
                 )
-                reservoir = np.empty(
-                    (1_000_000, self.embedding_dim), dtype=np.float32
-                )
+                reservoir = np.empty((1_000_000, self.embedding_dim), dtype=np.float32)
                 reservoir_n += 1
                 offset = 0
                 new_offset = len(embeddings)
@@ -196,8 +190,7 @@ class Encoder:
 
         if offset < len(reservoir):
             np.save(
-                embeddings_folder_path(self.index_name)
-                / f"chunk_{reservoir_n}.npy",
+                embeddings_folder_path(self.index_name) / f"chunk_{reservoir_n}.npy",
                 reservoir[:offset],
             )
             reservoir = []

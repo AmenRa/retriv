@@ -73,9 +73,7 @@ def bm25_multi(
             freqs = _term_doc_freqs[j]
 
             df = np.float32(len(indices))
-            idf = np.float32(
-                np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5)))
-            )
+            idf = np.float32(np.log(1.0 + (((doc_count - df) + 0.5) / (df + 0.5))))
 
             _scores[indices] += idf * (
                 (freqs * (k1 + 1.0))

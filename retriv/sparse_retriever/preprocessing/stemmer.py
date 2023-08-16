@@ -208,14 +208,12 @@ stemmers_f_dict = {
 
 
 def _get_stemmer(stemmer: str) -> callable:
-    assert (
-        stemmer.lower() in stemmers_f_dict
-    ), f"Stemmer {stemmer} not supported."
+    assert stemmer.lower() in stemmers_f_dict, f"Stemmer {stemmer} not supported."
     return stemmers_f_dict[stemmer.lower()]
 
 
 def get_stemmer(stemmer: Union[str, callable, bool]) -> callable:
-    if type(stemmer) is str:
+    if isinstance(stemmer, str):
         return _get_stemmer(stemmer)
     elif callable(stemmer):
         return stemmer
