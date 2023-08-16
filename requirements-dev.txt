@@ -1,0 +1,11 @@
+black
+black[jupyter]
+blackdoc
+isort
+pytest
+pytest-cov
+pytest-xdist
+ruff
+twine
+typos
+wheel
