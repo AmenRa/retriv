@@ -5,7 +5,7 @@ import numpy as np
 from numba import njit, prange
 from numba.typed import List as TypedList
 
-from ...utils.numba_utils import join_sorted_multi_recursive, unsorted_top_k
+from ...utils.numba_utils import union_sorted_multi, unsorted_top_k
 
 
 @njit(cache=True)
@@ -15,7 +15,7 @@ def tf_idf(
     doc_lens: nb.typed.List[np.ndarray],
     cutoff: int,
 ) -> Tuple[np.ndarray]:
-    unique_doc_ids = join_sorted_multi_recursive(doc_ids)
+    unique_doc_ids = union_sorted_multi(doc_ids)
 
     doc_count = len(doc_lens)
     scores = np.empty(doc_count, dtype=np.float32)
@@ -57,7 +57,7 @@ def tf_idf_multi(
         _term_doc_freqs = term_doc_freqs[i]
         _doc_ids = doc_ids[i]
 
-        _unique_doc_ids = join_sorted_multi_recursive(_doc_ids)
+        _unique_doc_ids = union_sorted_multi(_doc_ids)
 
         doc_count = len(doc_lens)
         _scores = np.empty(doc_count, dtype=np.float32)

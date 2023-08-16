@@ -1,27 +1,30 @@
 import numpy as np
+import pytest
 from numba.typed import List as TypedList
 
 from retriv.utils.numba_utils import (
     concat1d,
+    diff_sorted,
     get_indices,
-    join_sorted,
-    join_sorted_multi,
-    join_sorted_multi_recursive,
+    intersect_sorted,
+    intersect_sorted_multi,
+    union_sorted,
+    union_sorted_multi,
     unsorted_top_k,
 )
 
 
 # TESTS ========================================================================
-def test_join_sorted():
+def test_union_sorted():
     a1 = np.array([1, 3, 4, 7], dtype=np.int32)
     a2 = np.array([1, 4, 7, 9], dtype=np.int32)
-    result = join_sorted(a1, a2)
+    result = union_sorted(a1, a2)
     expected = np.array([1, 3, 4, 7, 9], dtype=np.int32)
 
     assert np.array_equal(result, expected)
 
 
-def test_join_sorted_multi():
+def test_union_sorted_multi():
     a1 = np.array([1, 3, 4, 7], dtype=np.int32)
     a2 = np.array([1, 4, 7, 9], dtype=np.int32)
     a3 = np.array([10, 11], dtype=np.int32)
@@ -29,22 +32,42 @@ def test_join_sorted_multi():
 
     arrays = TypedList([a1, a2, a3, a4])
 
-    result = join_sorted_multi(arrays)
+    result = union_sorted_multi(arrays)
     expected = np.array([1, 3, 4, 7, 9, 10, 11, 12, 13], dtype=np.int32)
 
     assert np.array_equal(result, expected)
 
 
-def test_join_sorted_multi_recursive():
+def test_intersect_sorted():
     a1 = np.array([1, 3, 4, 7], dtype=np.int32)
     a2 = np.array([1, 4, 7, 9], dtype=np.int32)
-    a3 = np.array([10, 11], dtype=np.int32)
-    a4 = np.array([11, 12, 13], dtype=np.int32)
+    result = intersect_sorted(a1, a2)
+    expected = np.array([1, 4, 7], dtype=np.int32)
+
+    assert np.array_equal(result, expected)
+
+
+def test_intersect_sorted_multi():
+    a1 = np.array([1, 3, 4, 7], dtype=np.int32)
+    a2 = np.array([1, 4, 7, 9], dtype=np.int32)
+    a3 = np.array([4, 7], dtype=np.int32)
+    a4 = np.array([3, 7, 9], dtype=np.int32)
 
     arrays = TypedList([a1, a2, a3, a4])
 
-    result = join_sorted_multi_recursive(arrays)
-    expected = np.array([1, 3, 4, 7, 9, 10, 11, 12, 13], dtype=np.int32)
+    result = intersect_sorted_multi(arrays)
+    expected = np.array([7], dtype=np.int32)
+
+    print(result)
+
+    assert np.array_equal(result, expected)
+
+
+def test_diff_sorted():
+    a1 = np.array([1, 3, 4, 7], dtype=np.int32)
+    a2 = np.array([1, 4, 7, 9], dtype=np.int32)
+    result = diff_sorted(a1, a2)
+    expected = np.array([3], dtype=np.int32)
 
     assert np.array_equal(result, expected)
 
