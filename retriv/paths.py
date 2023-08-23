@@ -28,6 +28,10 @@ def sr_state_path(index_name: str):
     return index_path(index_name) / "sr_state.npz"
 
 
+def fr_state_path(index_name: str):
+    return index_path(index_name) / "fr_state.npz"
+
+
 def embeddings_path(index_name: str):
     return index_path(index_name) / "embeddings.h5"
 

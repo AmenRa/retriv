@@ -44,12 +44,7 @@ class BaseRetriever:
 
         return collection
 
-    def save_collection(
-        self,
-        collection: Iterable,
-        callback: callable = None,
-        show_progress: bool = True,
-    ):
+    def save_collection(self, collection: Iterable, callback: callable = None):
         with open(docs_path(self.index_name), "wb") as f:
             for doc in collection:
                 x = callback(doc) if callback is not None else doc

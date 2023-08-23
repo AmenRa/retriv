@@ -2,7 +2,7 @@
 
 The Sparse Retriever is a traditional searcher based on lexical matching.
 It supports [BM25](https://en.wikipedia.org/wiki/Okapi_BM25), the retrieval model used by major search engines libraries, such as [Lucene](https://en.wikipedia.org/wiki/Apache_Lucene) and [Elasticsearch](https://en.wikipedia.org/wiki/Elasticsearch). 
-[retriv](https://github.com/AmenRa/retriv) also implements the classic relevance model TF-IDF for educational purposes.
+[retriv](https://github.com/AmenRa/retriv) also implements the classic relevance model [TF-IDF](https://en.wikipedia.org/wiki/Tf–idf) for educational purposes.
 
 The Sparse Retriever also provides several resources for multi-lingual [text pre-processing](https://github.com/AmenRa/retriv/blob/main/docs/text_preprocessing.md), aiming to maximize its retrieval effectiveness.
 
@@ -94,7 +94,7 @@ sr.search(
 )
 ```
 Output:
-```python
+```json
 [
   {
     "id": "doc_2",
@@ -120,7 +120,7 @@ sr.msearch(
 )
 ```
 Output:
-```python
+```json
 {
   "q_1": {
     "doc_2": 1.7536403,

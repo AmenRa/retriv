@@ -113,7 +113,7 @@ hr.search(
 )
 ```
 Output:
-```python
+```json
 [
   {
     "id": "doc_2",
@@ -140,7 +140,7 @@ hr.msearch(
 )
 ```
 Output:
-```python
+```json
 {
   "q_1": {
     "doc_2": 1.7536403,

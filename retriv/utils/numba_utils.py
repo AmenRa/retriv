@@ -96,7 +96,12 @@ def diff_sorted(a1: np.array, a2: np.array):
             i += 1
             j += 1
 
-    return result[:k]
+    result = result[:k]
+
+    if i < len(a1):
+        result = np.concatenate((result, a1[i:]))
+
+    return result
 
 
 #  -----------------------------------------------------------------------------

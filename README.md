@@ -24,6 +24,10 @@
 </p>
 
 ## 🔥 News
+- [August 23, 2023] `retriv` 0.2.2 is out!  
+This release adds _experimental_ support for multi-field documents and filters.
+Please, refer to [Advanced Retriever](https://github.com/AmenRa/retriv/blob/main/docs/advanced_retriever.md) documentation.
+
 - [February 18, 2023] `retriv` 0.2.0 is out!  
 This release adds support for Dense and Hybrid Retrieval.
 Dense Retrieval leverages the semantic similarity of the queries' and documents' vector representations, which can be computed directly by `retriv` or imported from other sources.
@@ -51,6 +55,8 @@ Click [here](https://github.com/AmenRa/retriv/blob/main/docs/sparse_retriever.md
 Click [here](https://github.com/AmenRa/retriv/blob/main/docs/dense_retriever.md) to learn more.
 - [Hybrid Retriever](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md): an hybrid retriever is a retrieval model built on top of a sparse and a dense retriever.
 Click [here](https://github.com/AmenRa/retriv/blob/main/docs/hybrid_retriever.md) to learn more.
+- [Advanced Retriever](https://github.com/AmenRa/retriv/blob/main/docs/advanced_retriever.md): an advanced sparse retriever supporting filters. This is and experimental feature.
+Click [here](https://github.com/AmenRa/retriv/blob/main/docs/advanced_retriever.md) to learn more.
 
 ### Unified Search Interface
 All the supported retrievers share the same search interface:
@@ -101,7 +107,7 @@ se = SearchEngine("new-index").index(collection)
 se.search("witches masses")
 ```
 Output:
-```python
+```json
 [
   {
     "id": "doc_2",

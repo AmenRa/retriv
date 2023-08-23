@@ -168,7 +168,7 @@ class DenseRetriever(BaseRetriever):
             DenseRetriever: Dense Retriever
         """
 
-        self.save_collection(collection, callback, show_progress)
+        self.save_collection(collection, callback)
         self.initialize_doc_index()
         self.initialize_id_mapping()
         self.doc_count = len(self.id_mapping)

@@ -84,7 +84,7 @@ dr.search(
 )
 ```
 Output:
-```python
+```json
 [
   {
     "id": "doc_2",
@@ -111,7 +111,7 @@ dr.msearch(
 )
 ```
 Output:
-```python
+```json
 {
   "q_1": {
     "doc_2": 1.7536403,

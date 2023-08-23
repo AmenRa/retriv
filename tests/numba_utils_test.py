@@ -71,6 +71,13 @@ def test_diff_sorted():
 
     assert np.array_equal(result, expected)
 
+    a1 = np.array([1, 3, 4, 7, 11], dtype=np.int32)
+    a2 = np.array([1, 4, 7, 9], dtype=np.int32)
+    result = diff_sorted(a1, a2)
+    expected = np.array([3, 11], dtype=np.int32)
+
+    assert np.array_equal(result, expected)
+
 
 def test_concat1d():
     a1 = np.array([1, 3, 4, 7], dtype=np.int32)

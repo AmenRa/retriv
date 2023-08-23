@@ -5,7 +5,12 @@ import numpy as np
 from numba import njit, prange
 from numba.typed import List as TypedList
 
-from ...utils.numba_utils import union_sorted_multi, unsorted_top_k
+from ...utils.numba_utils import (
+    intersect_sorted,
+    intersect_sorted_multi,
+    union_sorted_multi,
+    unsorted_top_k,
+)
 
 
 @njit(cache=True)
@@ -17,8 +22,16 @@ def bm25(
     relative_doc_lens: nb.typed.List[np.ndarray],
     doc_count: int,
     cutoff: int,
+    operator: str = "OR",
+    subset_doc_ids: np.ndarray = None,
 ) -> Tuple[np.ndarray]:
-    unique_doc_ids = union_sorted_multi(doc_ids)
+    if operator == "AND":
+        unique_doc_ids = intersect_sorted_multi(doc_ids)
+    elif operator == "OR":
+        unique_doc_ids = union_sorted_multi(doc_ids)
+
+    if subset_doc_ids is not None:
+        unique_doc_ids = intersect_sorted(unique_doc_ids, subset_doc_ids)
 
     scores = np.empty(doc_count, dtype=np.float32)
     scores[unique_doc_ids] = 0.0  # Initialize scores
