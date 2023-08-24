@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="retriv",
-    version="0.2.2",
+    version="0.2.3",
     author="Elias Bassani",
     author_email="elias.bssn@gmail.com",
     description="retriv: A Python Search Engine for Humans.",
@@ -32,6 +32,7 @@ setuptools.setup(
         "transformers[torch]",
         "faiss-cpu",
         "autofaiss",
+        "multipipe",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
