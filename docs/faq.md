@@ -1,6 +1,6 @@
 # FAQ
 
-## How do I change `ranx` working directory?
+## How do I change `retriv` working directory?
 ```python
 import retriv
 
