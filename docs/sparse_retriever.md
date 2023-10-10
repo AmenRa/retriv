@@ -14,7 +14,7 @@ The Sparse Retriever provides several options to tailor its functioning to you p
 Default parameter values are shown.
 
 ```python
-# Note: the SparseRetriever as an alias called SearchEngine, if you prefer
+# Note: the SparseRetriever has an alias called SearchEngine, if you prefer
 from retriv import SparseRetriever
 
 sr = SparseRetriever(
