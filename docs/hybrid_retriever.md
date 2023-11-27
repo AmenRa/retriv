@@ -178,7 +178,7 @@ You can inspect the best configurations found by printing `hr.sparse_retriever.h
 ```python
 sr.autotune(
   queries=[{ "q_id": "q_1", "text": "...", ... }],  # Train queries
-  qrels=[{ "q_1": { "doc_1": 1, ... }, ... }],      # Train qrels
+  qrels={ "q_1": { "doc_1": 1, ... }, ... },      # Train qrels
   metric="ndcg",  # Default value, metric to maximize
   n_trials=100,   # Default value, number of trials
   cutoff=100,     # Default value, number of results
