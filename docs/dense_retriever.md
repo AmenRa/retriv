@@ -51,7 +51,7 @@ dr = dr.index_file(
   callback=lambda doc: {      # Callback defaults to None.
     "id": doc["id"],
     "text": doc["title"] + ". " + doc["text"],          
-  ),
+  },
 )
 ```
 
