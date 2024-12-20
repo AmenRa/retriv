@@ -117,6 +117,7 @@ class AdvancedRetriever(SparseRetriever):
             "doc_lens": self.doc_lens,
             "relative_doc_lens": self.relative_doc_lens,
             "hyperparams": self.hyperparams,
+            "metadata": self.metadata,
         }
 
         np.savez_compressed(fr_state_path(self.index_name), state=state)
@@ -145,6 +146,7 @@ class AdvancedRetriever(SparseRetriever):
         se.doc_lens = state["doc_lens"]
         se.relative_doc_lens = state["relative_doc_lens"]
         se.hyperparams = state["hyperparams"]
+        se.metadata = state["metadata"]
 
         state = {
             "init_args": se.init_args,
@@ -155,6 +157,7 @@ class AdvancedRetriever(SparseRetriever):
             "doc_lens": se.doc_lens,
             "relative_doc_lens": se.relative_doc_lens,
             "hyperparams": se.hyperparams,
+            "metadata": se.metadata,
         }
 
         return se
