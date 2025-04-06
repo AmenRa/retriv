@@ -1,5 +1,7 @@
+import tempfile
 from collections import defaultdict
 
+import orjson
 import pytest
 
 from retriv.experimental import AdvancedRetriever
@@ -46,6 +48,15 @@ def collection():
             "genre": ["Heavy Metal"],
         },
     ]
+
+
+@pytest.fixture
+def collection_file(collection):
+    with tempfile.NamedTemporaryFile(suffix=".jsonl", mode="wb") as f:
+        for doc in collection:
+            f.write(orjson.dumps(doc) + "\n".encode())
+        f.flush()
+        yield f.name
 
 
 def test_check_schema_no_id():
@@ -582,10 +593,8 @@ def test_search_with_subset_doc_ids(collection, schema):
     assert "doc_1" in res
 
 
-def test_index_file(schema):
-    se = AdvancedRetriever(schema).index_file(
-        "tests/test_data/multifield_collection.jsonl"
-    )
+def test_index_file(schema, collection_file):
+    se = AdvancedRetriever(schema).index_file(collection_file)
 
     query = {
         "text": "witches masses",
