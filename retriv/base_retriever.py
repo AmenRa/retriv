@@ -77,7 +77,7 @@ class BaseRetriever:
         return results
 
     def map_internal_ids_to_original_ids(self, doc_ids: Iterable) -> List[str]:
-        return [self.id_mapping[doc_id] for doc_id in doc_ids]
+        return [self.id_mapping[doc_id] for doc_id in doc_ids if doc_id != -1]
 
     def save(self):
         raise NotImplementedError()
