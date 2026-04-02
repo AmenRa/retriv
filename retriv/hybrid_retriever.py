@@ -251,8 +251,9 @@ class HybridRetriever(BaseRetriever):
             List: results.
         """
 
-        sparse_results = self.sparse_retriever.search(query, False, 1_000)
-        dense_results = self.dense_retriever.search(query, False, 1_000)
+        sub_cutoff = max(cutoff, 1_000)
+        sparse_results = self.sparse_retriever.search(query, False, sub_cutoff)
+        dense_results = self.dense_retriever.search(query, False, sub_cutoff)
         hybrid_results = self.merger.fuse([sparse_results, dense_results])
         return (
             self.prepare_results(
@@ -282,8 +283,9 @@ class HybridRetriever(BaseRetriever):
             Dict: results.
         """
 
-        sparse_results = self.sparse_retriever.msearch(queries, 1_000)
-        dense_results = self.dense_retriever.msearch(queries, 1_000, batch_size)
+        sub_cutoff = max(cutoff, 1_000)
+        sparse_results = self.sparse_retriever.msearch(queries, sub_cutoff)
+        dense_results = self.dense_retriever.msearch(queries, sub_cutoff, batch_size)
         return self.merger.mfuse([sparse_results, dense_results], cutoff)
 
     def bsearch(
